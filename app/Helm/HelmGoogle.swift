@@ -1,5 +1,11 @@
 import Foundation
 import Mailbox
+#if canImport(GoogleSignIn)
+import GoogleSignIn
+#endif
+#if canImport(UIKit)
+import UIKit
+#endif
 
 enum HelmGoogle {
   static func signIn(
@@ -7,10 +13,43 @@ enum HelmGoogle {
     origin: String,
     completion: @escaping (Result<NativeSession, Error>) -> Void
   ) {
-    #if canImport(GoogleSignIn)
-    // Wired when the Xcode target adds GoogleSignIn-iOS.
-    // nonce: GET /api/auth/nonce, else mintNonce(); POST /api/auth/token.
-    completion(.failure(GoogleNeedPackage()))
+    #if canImport(GoogleSignIn) && canImport(UIKit)
+    let ios = HelmConfig.googleIosClientId.trimmingCharacters(in: .whitespacesAndNewlines)
+    if ios.isEmpty {
+      completion(.failure(GoogleNeedClient()))
+      return
+    }
+    guard let vc = helmPresenter() else {
+      completion(.failure(GoogleNeedPresenter()))
+      return
+    }
+    let nonce = fetchNonce(origin: origin)
+    GIDSignIn.sharedInstance.configuration = GIDConfiguration(
+      clientID: ios,
+      serverClientID: webClientId
+    )
+    DispatchQueue.main.async {
+      GIDSignIn.sharedInstance.signIn(
+        withPresenting: vc,
+        hint: nil,
+        additionalScopes: nil,
+        nonce: nonce
+      ) { result, error in
+        if let error {
+          completion(.failure(error))
+          return
+        }
+        guard let token = result?.user.idToken?.tokenString else {
+          completion(.failure(GoogleNeedPackage()))
+          return
+        }
+        do {
+          completion(.success(try exchange(origin: origin, idToken: token, nonce: nonce)))
+        } catch {
+          completion(.failure(error))
+        }
+      }
+    }
     #else
     completion(.failure(GoogleNeedPackage()))
     #endif
@@ -25,11 +64,39 @@ enum HelmGoogle {
     let http = URLSessionTransport()
     return AuthApi(transport: http).nonce(origin: origin) ?? mintNonce()
   }
+
+  static func fetchMe(origin: String, token: String) -> Me? {
+    try? AuthApi(transport: URLSessionTransport()).me(origin: origin, token: token)
+  }
 }
+
+#if canImport(UIKit)
+func helmPresenter() -> UIViewController? {
+  let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+  let window = scenes.flatMap(\.windows).first { $0.isKeyWindow } ?? scenes.flatMap(\.windows).first
+  var vc = window?.rootViewController
+  while let shown = vc?.presentedViewController {
+    vc = shown
+  }
+  return vc
+}
+#endif
 
 struct GoogleNeedPackage: Error, LocalizedError {
   var errorDescription: String? {
     "Add the GoogleSignIn-iOS package in Xcode, plus an iOS OAuth client for com.gantree.helm."
+  }
+}
+
+struct GoogleNeedClient: Error, LocalizedError {
+  var errorDescription: String? {
+    "This build has no iOS OAuth client. Bake HELM_GOOGLE_IOS_CLIENT_ID."
+  }
+}
+
+struct GoogleNeedPresenter: Error, LocalizedError {
+  var errorDescription: String? {
+    "Google Sign-In needs a window to present from. Open Helm and try again."
   }
 }
 

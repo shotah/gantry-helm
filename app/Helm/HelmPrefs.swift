@@ -7,7 +7,7 @@ final class HelmPrefs {
 
   init(defaults: UserDefaults = UserDefaults(suiteName: "helm") ?? .standard) {
     d = defaults
-    heldSpike = d.string(forKey: Keys.spike) ?? ""
+    heldSpike = Self.readSecret(Keys.spike, defaults: defaults)
   }
 
   var origin: String {
@@ -26,12 +26,12 @@ final class HelmPrefs {
   }
 
   var session: String {
-    get { d.string(forKey: Keys.session) ?? "" }
+    get { Self.readSecret(Keys.session, defaults: d) }
     set {
-      d.set(newValue, forKey: Keys.session)
+      Self.writeSecret(Keys.session, newValue, defaults: d)
       if !newValue.isEmpty {
         heldSpike = ""
-        d.removeObject(forKey: Keys.spike)
+        Self.writeSecret(Keys.spike, "", defaults: d)
       }
     }
   }
@@ -42,8 +42,8 @@ final class HelmPrefs {
   }
 
   var email: String {
-    get { d.string(forKey: Keys.email) ?? "" }
-    set { d.set(newValue, forKey: Keys.email) }
+    get { Self.readSecret(Keys.email, defaults: d) }
+    set { Self.writeSecret(Keys.email, newValue, defaults: d) }
   }
 
   var gps: Bool {
@@ -112,12 +112,12 @@ final class HelmPrefs {
 
   func putSpike(_ value: String, persistToDisk: Bool) {
     heldSpike = value
-    d.set(persistToDisk ? value : "", forKey: Keys.spike)
+    Self.writeSecret(Keys.spike, persistToDisk ? value : "", defaults: d)
   }
 
   func signOut() {
-    d.removeObject(forKey: Keys.session)
-    d.removeObject(forKey: Keys.email)
+    Self.writeSecret(Keys.session, "", defaults: d)
+    Self.writeSecret(Keys.email, "", defaults: d)
     d.removeObject(forKey: Keys.sessionExp)
   }
 
@@ -125,6 +125,29 @@ final class HelmPrefs {
     let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
       ?? FileManager.default.temporaryDirectory
     return dir.appendingPathComponent("helm/thread.json")
+  }
+
+  static var blobDir: URL {
+    let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+      ?? FileManager.default.temporaryDirectory
+    return dir.appendingPathComponent("helm/blobs")
+  }
+
+  private static func readSecret(_ key: String, defaults: UserDefaults) -> String {
+    if let boxed = HelmKeychain.get(key), !boxed.isEmpty {
+      return boxed
+    }
+    let old = defaults.string(forKey: key) ?? ""
+    if !old.isEmpty {
+      HelmKeychain.set(key, old)
+      defaults.removeObject(forKey: key)
+    }
+    return old
+  }
+
+  private static func writeSecret(_ key: String, _ value: String, defaults: UserDefaults) {
+    HelmKeychain.set(key, value)
+    defaults.removeObject(forKey: key)
   }
 
   private func nonEmpty(_ s: String?) -> String? {

@@ -27,6 +27,9 @@ struct HelmScreen: View {
     let name = displaySlug(model.slug)
     ZStack(alignment: .topLeading) {
       Color(rgb: colors.canvas).ignoresSafeArea()
+      if model.backdropOn, let data = model.backdropJpeg, let img = helmImage(data) {
+        img.resizable().scaledToFill().opacity(0.35).ignoresSafeArea()
+      }
       VStack(spacing: 0) {
         HStack(spacing: 0) {
           Color.clear
@@ -54,7 +57,7 @@ struct HelmScreen: View {
         HelmChat()
         HelmCompose()
       }
-      KitFace(rev: model.avatarRev)
+      KitFace(jpeg: model.faceJpeg, rev: model.avatarRev)
         .frame(width: headerFaceSize, height: headerFaceSize)
         .offset(x: 8 + headerFaceNudgeX, y: headerFaceNudgeY)
         .zIndex(2)
@@ -80,21 +83,36 @@ struct HelmScreen: View {
 }
 
 struct KitFace: View {
+  var jpeg: Data?
   var rev: Int
   var body: some View {
     let colors = helmColors("boom")
     Circle()
       .fill(Color(rgb: colors.track))
+      .overlay {
+        if let jpeg, let img = helmImage(jpeg) {
+          img.resizable().scaledToFill()
+        } else {
+          Text(rev > 0 ? "" : "K")
+            .font(.title2.weight(.semibold))
+            .foregroundStyle(Color(rgb: colors.mark))
+        }
+      }
       .overlay(
         Circle().stroke(Color(rgb: colors.line), lineWidth: headerFaceStroke)
       )
-      .overlay(
-        Text(rev > 0 ? "" : "K")
-          .font(.title2.weight(.semibold))
-          .foregroundStyle(Color(rgb: colors.mark))
-      )
+      .clipShape(Circle())
       .accessibilityLabel("Kit")
   }
+}
+
+func helmImage(_ data: Data) -> Image? {
+  #if canImport(UIKit)
+  if let ui = UIImage(data: data) {
+    return Image(uiImage: ui)
+  }
+  #endif
+  return nil
 }
 
 struct HelmChat: View {
@@ -134,7 +152,7 @@ struct HelmChat: View {
             .background(Color(rgb: line.fromYou ? colors.you : colors.kit))
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
-        if let photo = line.photo, let data = decodeDataUrl(photo), let img = image(data) {
+        if let photo = line.photo, let data = decodeDataUrl(photo), let img = helmImage(data) {
           img.resizable().scaledToFit().frame(maxWidth: 220).clipShape(RoundedRectangle(cornerRadius: 10))
         }
         if line.pending {
@@ -148,12 +166,4 @@ struct HelmChat: View {
     }
   }
 
-  private func image(_ data: Data) -> Image? {
-    #if canImport(UIKit)
-    if let ui = UIImage(data: data) {
-      return Image(uiImage: ui)
-    }
-    #endif
-    return nil
-  }
 }

@@ -64,7 +64,8 @@ helpers. The 70% coverage bar is **this tree**, not the views.
 | `ThreadCache` | Last room on disk; connect `since` is the highest cached seq |
 | `Photo` / `Jpeg` / `SendError` | Same caps and refusal tokens as Cab / pendant |
 | `Emoji` / `Slash` / `Look` / `Palette` | Catalog + Boom-default themes |
-| `Avatar` / `GeoHint` / `GoogleHint` | Face / GPS / sign-in copy |
+| `Avatar` / `AvatarApi` / `BlobCache` | Face / backdrop GET, `If-None-Match`, disk JPEG + rev |
+| `GeoHint` / `GoogleHint` | GPS / sign-in copy |
 | `NotifyGate` | When a HUN / CarPlay card / buzz may fire (`shouldSpeak` cousin) |
 
 URLSession, Keychain, Google Sign-In SDK, SwiftUI, and CarPlay are

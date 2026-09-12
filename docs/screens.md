@@ -1,8 +1,8 @@
 # Screens
 
-What the mouth looks like. Reshoot when `make shot` exists. Until
-the SwiftUI shell lands, this is the contract Cab already paints —
-same Ada/Kit copy, same Boom / Lamp / Paper.
+What the mouth looks like. Reshoot when `make shot` exists. The
+SwiftUI shell is in `app/Helm` — same Ada/Kit copy, same Boom /
+Lamp / Paper as Cab.
 
 Boom is the default mood; Lamp and Paper are the other two README
 themes. The rest of the catalog lives in Settings (`Look.themeIds`).

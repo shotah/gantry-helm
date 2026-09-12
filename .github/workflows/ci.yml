@@ -68,6 +68,20 @@ jobs:
           name: coverage-badge
           path: badges/coverage.svg
 
+  # Hosted Mac: compile the SwiftUI shell. Linux cannot see UIKit / GID / Photos.
+  # Does not need an Apple ID. Unsigned Simulator build — not an installable IPA.
+  ios:
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Unsigned Simulator build
+        run: make ios
+
   badge:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: check

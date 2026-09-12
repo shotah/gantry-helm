@@ -34,6 +34,10 @@ grep -q 'HELM_GOOGLE_WEB_CLIENT_ID' "$root/.github/workflows/release.yml" || {
   echo "FAIL: release.yml should pass HELM_GOOGLE_WEB_CLIENT_ID" >&2
   exit 1
 }
+grep -q 'HELM_GOOGLE_IOS_CLIENT_ID' "$root/.github/workflows/release.yml" || {
+  echo "FAIL: release.yml should pass HELM_GOOGLE_IOS_CLIENT_ID" >&2
+  exit 1
+}
 
 plist="$root/app/Info.plist"
 grep -q 'com.gantree.helm\|PRODUCT_BUNDLE_IDENTIFIER' "$root/app/Helm.xcodeproj/project.pbxproj" || {

@@ -114,7 +114,10 @@ struct HelmSettings: View {
         Text("When on, \(displaySlug(model.slug)) picks the color theme. Off keeps the one you pick.")
           .font(.caption)
           .foregroundStyle(Color(rgb: colors.dim))
-        Toggle(isOn: $model.backdropOn) {
+        Toggle(isOn: Binding(
+          get: { model.backdropOn },
+          set: { model.setBackdrop($0) }
+        )) {
           Text("Backdrop")
         }
         Text("\(displaySlug(model.slug)) can paint a wallpaper behind the thread. Off keeps the theme.")

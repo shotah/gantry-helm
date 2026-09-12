@@ -41,6 +41,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HELM_MAILBOX_ORIGIN: ${{ secrets.HELM_MAILBOX_ORIGIN || vars.HELM_MAILBOX_ORIGIN }}
           HELM_GOOGLE_WEB_CLIENT_ID: ${{ secrets.HELM_GOOGLE_WEB_CLIENT_ID || vars.HELM_GOOGLE_WEB_CLIENT_ID }}
+          HELM_GOOGLE_IOS_CLIENT_ID: ${{ secrets.HELM_GOOGLE_IOS_CLIENT_ID || vars.HELM_GOOGLE_IOS_CLIENT_ID }}
         run: |
           set -euo pipefail
           gh release create "${GITHUB_REF_NAME}" \

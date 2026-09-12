@@ -8,13 +8,16 @@ Family-beta install. App Store is not a goal.
    Developer Mode) on the phone, or a paid developer team in Xcode.
 2. Mac with Xcode 15+. Open `app/Helm.xcodeproj`.
 3. Signing: your team, bundle `com.gantree.helm`.
-4. Bake mailbox + Google into the scheme / `.env`:
+4. Bake mailbox + Google into the scheme / `.env` (same first two
+   strings as Cab; iOS client is new — **no SHA-1**):
 
    ```
    HELM_MAILBOX_ORIGIN=https://pendant.example.com
    HELM_GOOGLE_WEB_CLIENT_ID=<pendant Web client id>
    HELM_GOOGLE_IOS_CLIENT_ID=<new iOS client>
    ```
+
+   Fill-in walk: [setup.md](setup.md#google-production-worker).
 
 5. Run on the device. First launch: trust the developer cert
    (Settings → General → VPN & Device Management).

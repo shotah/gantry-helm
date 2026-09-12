@@ -14,6 +14,7 @@ final class HelmModel: ObservableObject {
   private var outbox = Outbox()
   private var socket: MailboxSocket?
   private var cache: ThreadCache?
+  private var blobs: AvatarApi?
 
   @Published var origin: String
   @Published var slug: String
@@ -42,6 +43,8 @@ final class HelmModel: ObservableObject {
   @Published var roomTheme = ""
   @Published var avatarRev = 0
   @Published var backdropRev = 0
+  @Published var faceJpeg: Data?
+  @Published var backdropJpeg: Data?
   @Published var typingUntil: Int64 = 0
   @Published var googleReady: Bool
   @Published var webClientId: String
@@ -74,8 +77,10 @@ final class HelmModel: ObservableObject {
     webClientId = HelmConfig.googleWebClientId
     googleReady = !HelmConfig.googleWebClientId.trimmingCharacters(in: .whitespaces).isEmpty
     cache = ThreadCache(file: HelmPrefs.threadFile)
+    blobs = AvatarApi(transport: URLSessionTransport(), cache: BlobCache(dir: HelmPrefs.blobDir))
     hydrateDisk()
     publish()
+    refreshLook()
   }
 
   func persistFields() {
@@ -137,6 +142,7 @@ final class HelmModel: ObservableObject {
       )
     }
     socket?.start(origin: origin, slug: slug, bearer: bearer)
+    refreshLook()
   }
 
   func sendText() {
@@ -209,6 +215,26 @@ final class HelmModel: ObservableObject {
     }
     publish()
     persistThread()
+    if frame.kind == "face" || frame.kind == "backdrop" {
+      refreshLook()
+    }
+  }
+
+  func stagePhoto(data: Data) {
+    persistFields()
+    let edge = photoEdge(photoSizeId)
+    guard let jpeg = jpegFromImageData(data, edge: edge, maxBytes: photoJpegBytesMax) else {
+      mouth.setHint(describePhotoError(photoErrorToken("too large")))
+      publish()
+      return
+    }
+    switch photoDataUrl(jpeg) {
+    case .ok(let url):
+      stagedPhoto = url
+    case .err(let error):
+      mouth.setHint(describePhotoError(error))
+    }
+    publish()
   }
 
   func signOut() {
@@ -230,9 +256,26 @@ final class HelmModel: ObservableObject {
     sub = session.sub
     spike = ""
     prefs.putSpike("", persistToDisk: false)
+    if let me = HelmGoogle.fetchMe(origin: origin, token: session.token) {
+      cranes = me.cranes
+      sub = me.sub
+      if let listed = me.email, !listed.isEmpty {
+        email = listed
+        prefs.email = listed
+      }
+      if !me.cranes.isEmpty && !me.cranes.contains(slug) {
+        slug = me.cranes[0]
+      }
+    }
     authHint = mailboxSignedInHint(email: email, cranes: cranes)
     publish()
     connect()
+  }
+
+  func setBackdrop(_ on: Bool) {
+    backdropOn = on
+    persistFields()
+    refreshLook()
   }
 
   func authLost() {
@@ -256,6 +299,33 @@ final class HelmModel: ObservableObject {
   private func flushOutbox() {
     for frame in outbox.popAll() {
       _ = socket?.send(frame)
+    }
+  }
+
+  func refreshLook() {
+    let api = blobs
+    faceJpeg = api?.cached(origin: origin, slug: slug)
+    if backdropOn {
+      backdropJpeg = api?.cached(origin: origin, slug: slug, path: "/api/backdrop")
+    } else {
+      backdropJpeg = nil
+    }
+    let origin = self.origin
+    let slug = self.slug
+    let bearer = self.bearer
+    let faceRev = avatarRev
+    let backRev = backdropRev
+    let wantBack = backdropOn
+    DispatchQueue.global(qos: .userInitiated).async {
+      let face = api?.fetch(origin: origin, slug: slug, bearer: bearer, rev: faceRev)
+      let back = wantBack
+        ? api?.fetch(origin: origin, slug: slug, bearer: bearer, rev: backRev, path: "/api/backdrop")
+        : nil
+      DispatchQueue.main.async {
+        self.faceJpeg = face
+        self.backdropJpeg = wantBack ? back : nil
+        self.publish()
+      }
     }
   }
 

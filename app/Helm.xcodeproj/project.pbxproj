@@ -15,6 +15,8 @@
 		A10000000000000000000008 /* HelmNotify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelmNotify.swift; sourceTree = "<group>"; };
 		A10000000000000000000009 /* HelmGoogle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelmGoogle.swift; sourceTree = "<group>"; };
 		A1000000000000000000000A /* MailboxSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MailboxSocket.swift; sourceTree = "<group>"; };
+		A1000000000000000000000B /* HelmPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelmPhoto.swift; sourceTree = "<group>"; };
+		A1000000000000000000000C /* HelmKeychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelmKeychain.swift; sourceTree = "<group>"; };
 		A10000000000000000000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A10000000000000000000020 /* Helm.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Helm.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000000000000000000001 /* HelmApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000001 /* HelmApp.swift */; };
@@ -27,7 +29,10 @@
 		A20000000000000000000008 /* HelmNotify.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* HelmNotify.swift */; };
 		A20000000000000000000009 /* HelmGoogle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000009 /* HelmGoogle.swift */; };
 		A2000000000000000000000A /* MailboxSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000A /* MailboxSocket.swift */; };
+		A2000000000000000000000B /* HelmPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000B /* HelmPhoto.swift */; };
+		A2000000000000000000000C /* HelmKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000C /* HelmKeychain.swift */; };
 		A20000000000000000000030 /* Mailbox in Frameworks */ = {isa = PBXBuildFile; productRef = A30000000000000000000002 /* Mailbox */; };
+		A20000000000000000000031 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = A30000000000000000000004 /* GoogleSignIn */; };
 		A40000000000000000000001 /* Helm */ = {
 			isa = PBXGroup;
 			children = (
@@ -41,6 +46,8 @@
 				A10000000000000000000008 /* HelmNotify.swift */,
 				A10000000000000000000009 /* HelmGoogle.swift */,
 				A1000000000000000000000A /* MailboxSocket.swift */,
+				A1000000000000000000000B /* HelmPhoto.swift */,
+				A1000000000000000000000C /* HelmKeychain.swift */,
 			);
 			path = Helm;
 			sourceTree = "<group>";
@@ -67,6 +74,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A20000000000000000000030 /* Mailbox in Frameworks */,
+				A20000000000000000000031 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +92,8 @@
 				A20000000000000000000008 /* HelmNotify.swift in Sources */,
 				A20000000000000000000009 /* HelmGoogle.swift in Sources */,
 				A2000000000000000000000A /* MailboxSocket.swift in Sources */,
+				A2000000000000000000000B /* HelmPhoto.swift in Sources */,
+				A2000000000000000000000C /* HelmKeychain.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,6 +111,7 @@
 			name = Helm;
 			packageProductDependencies = (
 				A30000000000000000000002 /* Mailbox */,
+				A30000000000000000000004 /* GoogleSignIn */,
 			);
 			productName = Helm;
 			productReference = A10000000000000000000020 /* Helm.app */;
@@ -210,6 +221,7 @@
 			mainGroup = A40000000000000000000002;
 			packageReferences = (
 				A30000000000000000000001 /* XCLocalSwiftPackageReference ".." */,
+				A30000000000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			productRefGroup = A40000000000000000000003 /* Products */;
 			projectDirPath = "";
@@ -226,6 +238,19 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A30000000000000000000001 /* XCLocalSwiftPackageReference ".." */;
 			productName = Mailbox;
+		};
+		A30000000000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.2.0;
+			};
+		};
+		A30000000000000000000004 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A30000000000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
 		};
 	};
 	rootObject = A80000000000000000000001 /* Project object */;

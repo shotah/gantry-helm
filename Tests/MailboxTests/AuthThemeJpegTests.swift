@@ -7,9 +7,13 @@ import FoundationNetworking
 final class MockHTTP: HTTPTransport {
   var queue: [HTTPResult] = []
   var requests: [URLRequest] = []
+  var throwNext = false
 
   func perform(_ request: URLRequest) throws -> HTTPResult {
     requests.append(request)
+    if throwNext {
+      throw AuthError(code: 0, body: "offline")
+    }
     return queue.removeFirst()
   }
 }

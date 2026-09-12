@@ -19,26 +19,27 @@ letting another app read the thread are the failures that matter.
 
 ## Small
 
-- [ ] **Wire Google Sign-In iOS.** Add `GoogleSignIn-iOS` to the Xcode
+- [x] **Wire Google Sign-In iOS.** `GoogleSignIn-iOS` 9.2 on the Xcode
       target. `GET /api/auth/nonce` then `GIDSignIn` with that nonce,
       `POST /api/auth/token`. 404 nonce → `mintNonce()`. Tests for the
       exchange already live in `AuthThemeJpegTests`.
-- [ ] **PhotosPicker + camera encode.** Drive `shrinkSteps` /
+- [x] **PhotosPicker + camera encode.** Drive `shrinkSteps` /
       `shrinkToFit` with ImageIO. Caption + JPEG one inbound. Attach
       itself never sends.
-- [ ] **Hydrate face / backdrop GET.** `Avatar` URLs and `If-None-Match`
-      are in Mailbox. App still needs the bytes on disk.
+- [x] **Hydrate face / backdrop GET.** `AvatarApi` + `BlobCache` keep
+      JPEG + rev on disk and send `If-None-Match`. Header face and
+      thread wallpaper paint the bytes.
 
 ## Medium
 
-- [ ] **Keychain for the JWE.** High. `HelmPrefs` writes the session
-      to UserDefaults. Cab’s Tink ticket is the same threat. Wrap with
-      Keychain; spike stays memory-only off loopback.
+- [x] **Keychain for the JWE.** Session, spike, and email live in the
+      keychain (`com.gantree.helm`). First read migrates the old
+      UserDefaults copy. Spike still memory-only off loopback in debug.
 - [ ] **Walk sibling inbound** on a deployed origin. Mouth already paints
       `inbound` as you and skips HUN. Walk:
       [sibling_phones.md](sibling_phones.md).
-- [ ] **Photo on the compose draft.** Stage the data URL; Send emits
-      one inbound. Same as Cab / PWA.
+- [x] **Photo on the compose draft.** Stage the data URL (thumbnail +
+      Remove); Send emits one inbound. Same as Cab / PWA.
 
 ## Large
 

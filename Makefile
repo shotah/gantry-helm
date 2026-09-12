@@ -17,7 +17,7 @@ help: ## Show available targets
 	@echo "  make coverage       llvm-cov JSON + 70% Mailbox bar"
 	@echo "  make check-app       test + coverage"
 	@echo "  make check           script tests + check-app"
-	@echo "  make ios             xcodebuild (macOS only, CODE_SIGNING_ALLOWED=NO)"
+	@echo "  make ios             xcodebuild Simulator, unsigned (macOS / Actions)"
 	@echo "  make install-hooks   Pre-commit: tests. Pre-push: coverage."
 	@echo "  make version         Show VERSION + next tag (dry-run)"
 	@echo "  make release         Bump tag + latest, update VERSION, push"

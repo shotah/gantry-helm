@@ -122,6 +122,16 @@ final class PhotoTests: XCTestCase {
     let huge = "data:image/jpeg;base64," + String(repeating: "A", count: 2_100_000)
     XCTAssertNil(decodeDataUrl(huge))
   }
+
+  func testJpegFromImageDataKeepsASmallJpeg() {
+    let jpeg = fakeJpeg()
+    #if canImport(ImageIO)
+    XCTAssertNil(jpegFromImageData(Data([1, 2, 3]), edge: 1600, maxBytes: photoJpegBytesMax))
+    #else
+    XCTAssertEqual(jpeg, jpegFromImageData(jpeg, edge: 1600, maxBytes: photoJpegBytesMax))
+    XCTAssertNil(jpegFromImageData(Data([1, 2, 3]), edge: 1600, maxBytes: photoJpegBytesMax))
+    #endif
+  }
 }
 
 private func uniqueInts(_ xs: [Int]) -> [Int] {
