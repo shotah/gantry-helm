@@ -13,8 +13,9 @@ make install-hooks   # pre-commit: tests; pre-push: coverage
 make ios             # xcodebuild (macOS)
 ```
 
-Needs Swift 5.9+ (`swift test`). Xcode: open `app/Helm.xcodeproj`, which
-depends on the local `Mailbox` package at the repo root. iOS 17+.
+Needs Swift 5.9+ (`swift test`). CI uses Swift 6.3.3 and Node 24.
+Xcode: open `app/Helm.xcodeproj`, which depends on the local `Mailbox`
+package at the repo root. iOS 17+.
 
 This app is a normal iPhone chat (thread + communication notifications).
 CarPlay is extra, not the only mouth. The pendant PWA in Safari is a

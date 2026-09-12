@@ -77,8 +77,8 @@ public struct WireFrame: Equatable {
   public var theme: String?
 
   public init(
-    text: String? = nil,
     kind: String? = nil,
+    text: String? = nil,
     id: String? = nil,
     since: String? = nil,
     images: [String]? = nil,
@@ -90,8 +90,8 @@ public struct WireFrame: Equatable {
     rev: Int? = nil,
     theme: String? = nil
   ) {
-    self.text = text
     self.kind = kind
+    self.text = text
     self.id = id
     self.since = since
     self.images = images
@@ -174,10 +174,10 @@ public func parseFrame(_ raw: String) -> WireFrame? {
   }
   let kind = JSON.string(o, "kind")
   var images: [String]?
-  if let arr = o["images"] as? [[String: Any]] {
+  if let arr = JSON.array(o["images"]) {
     var urls: [String] = []
     for item in arr {
-      let url = (item["url"] as? String) ?? ""
+      let url = (JSON.dict(item)?["url"] as? String) ?? ""
       if acceptInboundImage(url) {
         urls.append(url)
       }
@@ -187,8 +187,8 @@ public func parseFrame(_ raw: String) -> WireFrame? {
     }
   }
   return WireFrame(
-    text: capWireText(JSON.string(o, "text")),
     kind: kind,
+    text: capWireText(JSON.string(o, "text")),
     id: JSON.string(o, "id"),
     since: JSON.string(o, "since"),
     images: images,
@@ -214,8 +214,8 @@ public func inbound(
 ) -> WireFrame {
   let speech = stripHarnessContext(text)
   return WireFrame(
-    text: capWireText(speech.isEmpty ? nil : speech),
     kind: "inbound",
+    text: capWireText(speech.isEmpty ? nil : speech),
     id: id,
     images: images.flatMap { $0.isEmpty ? nil : $0 },
     context: context

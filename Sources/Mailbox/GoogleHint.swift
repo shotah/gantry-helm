@@ -1,3 +1,5 @@
+import Foundation
+
 public func googleSignInHint(className: String, message: String?, causeLines: [String] = []) -> String {
   let msg = message?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
   let summary: String

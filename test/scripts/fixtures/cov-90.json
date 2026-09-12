@@ -11,10 +11,6 @@
           "summary": { "lines": { "count": 10, "covered": 9 } }
         },
         {
-          "filename": "/src/Sources/Mailbox/Auth.swift",
-          "summary": { "lines": { "count": 85, "covered": 5 } }
-        },
-        {
           "filename": "/src/app/Helm/HelmApp.swift",
           "summary": { "lines": { "count": 100, "covered": 1 } }
         }

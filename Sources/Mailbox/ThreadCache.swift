@@ -84,7 +84,7 @@ public func encodeThread(
     "origin": room.origin,
     "slug": room.slug,
     "user": room.user,
-    "lines": kept.reversed(),
+    "lines": Array(kept.reversed()),
   ]
   return JSON.stringify(obj)
 }
@@ -101,12 +101,12 @@ public func decodeThread(_ raw: String, room: ThreadRoom) -> [ChatLine] {
   if got != room {
     return []
   }
-  guard let arr = o["lines"] as? [Any] else {
+  guard let arr = JSON.array(o["lines"]) else {
     return []
   }
   var out: [ChatLine] = []
   for item in arr {
-    guard let obj = item as? [String: Any], let line = decodeLine(obj) else {
+    guard let obj = JSON.dict(item), let line = decodeLine(obj) else {
       continue
     }
     out.append(line)
@@ -119,7 +119,7 @@ private func encodeLine(_ line: ChatLine) -> [String: Any] {
     "id": line.id,
     "you": line.fromYou,
     "text": line.text,
-    "at": line.at,
+    "at": NSNumber(value: line.at),
   ]
   if let kind = line.kind {
     o["kind"] = kind

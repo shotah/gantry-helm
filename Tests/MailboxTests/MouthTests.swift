@@ -69,7 +69,7 @@ final class MouthTests: XCTestCase {
       )
     )
     mouth.ingest(WireFrame(kind: "typing"))
-    XCTAssertEqual(false, mouth.ingest(WireFrame(kind: "error", id: "a2", text: "too large")))
+    XCTAssertEqual(false, mouth.ingest(WireFrame(kind: "error", text: "too large", id: "a2")))
     XCTAssertTrue(mouth.lines[0].pending)
     XCTAssertNil(mouth.lines[0].failed)
     XCTAssertFalse(mouth.lines[1].pending)
@@ -113,7 +113,7 @@ final class MouthTests: XCTestCase {
   func testMailboxErrorNeverMarksACraneBubble() {
     let mouth = Mouth()
     mouth.add(ChatLine(id: "k1", fromYou: false, text: "kit", kind: "reply"))
-    mouth.ingest(WireFrame(kind: "error", id: "k1", text: "rate"))
+    mouth.ingest(WireFrame(kind: "error", text: "rate", id: "k1"))
     XCTAssertNil(mouth.lines[0].failed)
     XCTAssertEqual("rate", mouth.hint)
     XCTAssertFalse(mouth.fail(id: "nope", why: "why"))
@@ -132,7 +132,7 @@ final class MouthTests: XCTestCase {
 
   func testInboundIsFromYouAndAddCapsAtEighty() {
     let mouth = Mouth()
-    mouth.ingest(WireFrame(kind: "inbound", id: "1", text: "hi"))
+    mouth.ingest(WireFrame(kind: "inbound", text: "hi", id: "1"))
     XCTAssertEqual(true, mouth.lines[0].fromYou)
     mouth.setUp(true)
     mouth.setHint("live")
@@ -149,9 +149,9 @@ final class MouthTests: XCTestCase {
 
   func testTranscriptReplayPaintsAndDedupesById() {
     let mouth = Mouth()
-    XCTAssertTrue(mouth.ingest(WireFrame(kind: "inbound", id: "a", text: "hatch", seq: 1, at: 10, replay: true)))
-    XCTAssertTrue(mouth.ingest(WireFrame(kind: "reply", id: "b", text: "latched", seq: 2, at: 20, replay: true)))
-    XCTAssertFalse(mouth.ingest(WireFrame(kind: "reply", id: "b", text: "latched", seq: 2, at: 20, replay: true)))
+    XCTAssertTrue(mouth.ingest(WireFrame(kind: "inbound", text: "hatch", id: "a", seq: 1, at: 10, replay: true)))
+    XCTAssertTrue(mouth.ingest(WireFrame(kind: "reply", text: "latched", id: "b", seq: 2, at: 20, replay: true)))
+    XCTAssertFalse(mouth.ingest(WireFrame(kind: "reply", text: "latched", id: "b", seq: 2, at: 20, replay: true)))
     XCTAssertEqual(["hatch", "latched"], mouth.lines.map(\.text))
   }
 
@@ -172,7 +172,7 @@ final class MouthTests: XCTestCase {
   func testReplyClearsTheDraftBubble() {
     let mouth = Mouth()
     mouth.ingest(WireFrame(kind: "draft", text: "⏳…"))
-    mouth.ingest(WireFrame(kind: "reply", id: "r1", text: "Gate's on the latch until 21:00."))
+    mouth.ingest(WireFrame(kind: "reply", text: "Gate's on the latch until 21:00.", id: "r1"))
     XCTAssertEqual(1, mouth.lines.count)
     XCTAssertEqual("r1", mouth.lines[0].id)
     XCTAssertEqual("reply", mouth.lines[0].kind)
@@ -184,12 +184,12 @@ final class MouthTests: XCTestCase {
     let draft = mouth.lines[0]
     XCTAssertEqual(true, draft.live)
     XCTAssertEqual(liveComposeKey, composeKey(draft))
-    mouth.ingest(WireFrame(kind: "reply", id: "r1", text: "Hello"))
+    mouth.ingest(WireFrame(kind: "reply", text: "Hello", id: "r1"))
     let reply = mouth.lines[0]
     XCTAssertEqual("r1", reply.id)
     XCTAssertEqual(true, reply.live)
     XCTAssertEqual(liveComposeKey, composeKey(reply))
-    mouth.ingest(WireFrame(kind: "inbound", id: "a1", text: "thanks"))
+    mouth.ingest(WireFrame(kind: "inbound", text: "thanks", id: "a1"))
     XCTAssertEqual(false, mouth.lines.first { $0.id == "r1" }?.live)
     XCTAssertEqual("r1", composeKey(mouth.lines.first { $0.id == "r1" }!))
     mouth.ingest(WireFrame(kind: "draft", text: "Next"))
@@ -205,7 +205,7 @@ final class MouthTests: XCTestCase {
   }
 
   func testSocketDownDropsDraftAndTyping() {
-    var t: Int64 = 1_000
+    let t: Int64 = 1_000
     let mouth = Mouth(now: { t })
     mouth.setUp(true)
     mouth.ingest(WireFrame(kind: "draft", text: "⏳…"))
@@ -240,7 +240,7 @@ final class MouthTests: XCTestCase {
     XCTAssertEqual(18_000, mouth.typingUntil)
     mouth.ingest(WireFrame(kind: "ack", id: "a1"))
     XCTAssertEqual(18_000, mouth.typingUntil)
-    mouth.ingest(WireFrame(kind: "reply", id: "r1", text: "done"))
+    mouth.ingest(WireFrame(kind: "reply", text: "done", id: "r1"))
     XCTAssertEqual(0, mouth.typingUntil)
     mouth.ingest(WireFrame(kind: "typing"))
     XCTAssertEqual(18_000, mouth.typingUntil)
@@ -277,20 +277,20 @@ final class MouthTests: XCTestCase {
 
   func testCatchUpPaintsBySeqAndKeepsADraftLast() {
     let mouth = Mouth()
-    mouth.ingest(WireFrame(kind: "reply", id: "b", text: "second", seq: 2, at: 20))
-    mouth.ingest(WireFrame(kind: "reply", id: "a", text: "first", seq: 1, at: 10))
+    mouth.ingest(WireFrame(kind: "reply", text: "second", id: "b", seq: 2, at: 20))
+    mouth.ingest(WireFrame(kind: "reply", text: "first", id: "a", seq: 1, at: 10))
     XCTAssertEqual(["a", "b"], mouth.lines.map(\.id))
     mouth.ingest(WireFrame(kind: "draft", text: "⏳ spinning up"))
-    mouth.ingest(WireFrame(kind: "inbound", id: "late", text: "I already sent this", seq: 3, at: 15))
+    mouth.ingest(WireFrame(kind: "inbound", text: "I already sent this", id: "late", seq: 3, at: 15))
     XCTAssertEqual(["a", "b", "late", draftId], mouth.lines.map(\.id))
-    let restamp = mouth.ingest(WireFrame(kind: "reply", id: "b", text: "second", seq: 2, at: 20))
+    let restamp = mouth.ingest(WireFrame(kind: "reply", text: "second", id: "b", seq: 2, at: 20))
     XCTAssertEqual(false, restamp)
     XCTAssertEqual(4, mouth.lines.count)
   }
 
   func testHydrateMergesByIdInMailboxOrderAndSkipsDrafts() {
     let mouth = Mouth()
-    mouth.ingest(WireFrame(kind: "reply", id: "live", text: "fresh", seq: 3, at: 30))
+    mouth.ingest(WireFrame(kind: "reply", text: "fresh", id: "live", seq: 3, at: 30))
     mouth.hydrate([
       ChatLine(id: "a", fromYou: true, text: "old me", kind: "inbound", at: 10, seq: 1),
       ChatLine(id: "live", fromYou: false, text: "stale copy", kind: "reply", at: 30, seq: 3),
@@ -330,7 +330,7 @@ final class MouthTests: XCTestCase {
   func testEchoRestampKeepsPendingUntilAck() {
     let mouth = Mouth()
     mouth.add(ChatLine(id: "a1", fromYou: true, text: "hi", kind: "inbound", pending: true, at: 50))
-    XCTAssertEqual(false, mouth.ingest(WireFrame(kind: "inbound", id: "a1", text: "hi", seq: 4, at: 40)))
+    XCTAssertEqual(false, mouth.ingest(WireFrame(kind: "inbound", text: "hi", id: "a1", seq: 4, at: 40)))
     let line = mouth.lines[0]
     XCTAssertEqual(4, line.seq)
     XCTAssertEqual(40, line.at)

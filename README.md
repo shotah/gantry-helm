@@ -112,7 +112,8 @@ make release         # bump patch, tag, push
 make release DRY_RUN=1
 ```
 
-Needs Swift 5.9+ for `swift test`. The IPA needs Xcode 15+ / iOS 17.
+Needs Swift 5.9+ for `swift test`. CI uses Swift 6.3.3 and Node 24.
+The IPA needs Xcode 15+ / iOS 17.
 Nested checkout under gantree (`repos/gantry-helm`), own git remote,
 same pattern as `repos/gantry-cab`. Walk: [docs/setup.md](docs/setup.md).
 

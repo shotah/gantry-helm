@@ -53,7 +53,7 @@ private func parseCommandList(_ raw: [Any]) -> [SlashCommand] {
     if out.count >= commandsMax {
       break
     }
-    guard let obj = item as? [String: Any] else {
+    guard let obj = JSON.dict(item) else {
       continue
     }
     let name = ((obj["name"] as? String) ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()

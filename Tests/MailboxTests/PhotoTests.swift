@@ -114,6 +114,9 @@ final class PhotoTests: XCTestCase {
     XCTAssertNil(decodeDataUrl("https://example.test/a.jpg"))
     XCTAssertNil(decodeDataUrl("data:text/plain;base64,YQ=="))
     XCTAssertNil(decodeDataUrl("data:image/jpeg;base64,!!!!"))
+    // Linux Data(base64Encoded:) rejects missing padding; Apple does not.
+    XCTAssertEqual(Data([0x41]), decodeDataUrl("data:image/jpeg;base64,QQ"))
+    XCTAssertEqual(Data([0x69]), decodeDataUrl("data:image/jpeg;base64,aa"))
     let wrapped = "data:image/png;base64,\nAQID"
     XCTAssertEqual(Data([1, 2, 3]), decodeDataUrl(wrapped))
     let huge = "data:image/jpeg;base64," + String(repeating: "A", count: 2_100_000)

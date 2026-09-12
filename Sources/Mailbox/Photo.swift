@@ -170,11 +170,18 @@ public func decodeDataUrl(_ url: String) -> Data? {
   guard let i = url.range(of: marker), url.hasPrefix("data:image/") else {
     return nil
   }
-  let b64 = url[i.upperBound...].replacingOccurrences(of: "\n", with: "")
+  var b64 = url[i.upperBound...].replacingOccurrences(of: "\n", with: "")
   if b64.count > imageB64Max {
     return nil
   }
-  guard let bytes = Data(base64Encoded: String(b64), options: [.ignoreUnknownCharacters]) else {
+  // Linux Data(base64Encoded:) wants padding; Apple is lenient.
+  let pad = b64.count % 4
+  if pad != 0 {
+    b64 += String(repeating: "=", count: 4 - pad)
+  }
+  guard let bytes = Data(base64Encoded: b64, options: [.ignoreUnknownCharacters]),
+    !bytes.isEmpty
+  else {
     return nil
   }
   return bytes.count <= imageBytesMax ? bytes : nil

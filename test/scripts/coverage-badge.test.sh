@@ -19,7 +19,7 @@ assert_eq() {
   fi
 }
 
-# Wire 18/20 + MailboxUrl 9/10 = 27/30 → 90%. Auth and HelmApp are skipped.
+# Wire 18/20 + MailboxUrl 9/10 = 27/30 → 90%. HelmApp is outside Sources/Mailbox.
 assert_eq "$("$pct" "$fix90")" "90" "scoped mailbox 90%"
 assert_eq "$("$pct" "$fix70")" "70" "exactly 70%"
 assert_eq "$("$pct" "$fix69")" "69" "69%"

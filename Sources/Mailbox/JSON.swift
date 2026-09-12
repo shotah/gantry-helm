@@ -6,7 +6,34 @@ enum JSON {
     guard let data = raw.data(using: .utf8) else {
       return nil
     }
-    return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+    return dict(try? JSONSerialization.jsonObject(with: data))
+  }
+
+  /// Linux JSONSerialization yields NSDictionary; `as? [String: Any]` is not enough.
+  static func dict(_ raw: Any?) -> [String: Any]? {
+    if let o = raw as? [String: Any] {
+      return o
+    }
+    guard let o = raw as? NSDictionary else {
+      return nil
+    }
+    var out: [String: Any] = [:]
+    out.reserveCapacity(o.count)
+    for (k, v) in o {
+      guard let key = k as? String else { continue }
+      out[key] = v
+    }
+    return out
+  }
+
+  static func array(_ raw: Any?) -> [Any]? {
+    if let a = raw as? [Any] {
+      return a
+    }
+    if let a = raw as? NSArray {
+      return a.map { $0 as Any }
+    }
+    return nil
   }
 
   static func stringify(_ obj: [String: Any]) -> String {
@@ -56,6 +83,22 @@ public func jsonWholeNumber(_ raw: Any?) -> Int64? {
   guard let raw, !(raw is NSNull) else {
     return nil
   }
+  // NSNumber(0)/NSNumber(1) are `is Bool` on Linux. Real JSON booleans
+  // are CFBoolean — reject those, then read the number.
+  if let n = raw as? NSNumber {
+    if CFGetTypeID(n) == CFBooleanGetTypeID() {
+      return nil
+    }
+    let d = n.doubleValue
+    if !d.isFinite {
+      return nil
+    }
+    let i = n.int64Value
+    if Double(i) == d {
+      return i
+    }
+    return nil
+  }
   if raw is Bool {
     return nil
   }
@@ -83,20 +126,6 @@ public func jsonWholeNumber(_ raw: Any?) -> Int64? {
   }
   if let n = raw as? Float {
     return jsonWholeNumber(Double(n))
-  }
-  if let n = raw as? NSNumber {
-    if CFGetTypeID(n) == CFBooleanGetTypeID() {
-      return nil
-    }
-    let d = n.doubleValue
-    if !d.isFinite {
-      return nil
-    }
-    let i = n.int64Value
-    if Double(i) == d {
-      return i
-    }
-    return nil
   }
   return nil
 }
