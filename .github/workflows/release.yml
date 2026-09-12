@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Notes
+        run: |
+          set -euo pipefail
+          name="$(tr -d '[:space:]' < VERSION)"
+          name="${name#v}"
+          mkdir -p dist
+          cat > dist/release-notes.md <<EOF
+          Sideload / Xcode: open \`app/Helm.xcodeproj\` on a Mac. Bundle \`com.gantree.helm\`.
+
+          Bake the mailbox with \`HELM_MAILBOX_ORIGIN\` and \`HELM_GOOGLE_WEB_CLIENT_ID\`
+          (Actions secrets). Create an **iOS** OAuth client for this bundle — the Web
+          client id is the ID token \`aud\`, same as Cab. Sign in with Apple is a mailbox
+          change; not this tag.
+
+          An unsigned IPA is optional. Do not fail this job for missing signing.
+          EOF
+          echo "NAME=$name" >> "$GITHUB_ENV"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HELM_MAILBOX_ORIGIN: ${{ secrets.HELM_MAILBOX_ORIGIN || vars.HELM_MAILBOX_ORIGIN }}
+          HELM_GOOGLE_WEB_CLIENT_ID: ${{ secrets.HELM_GOOGLE_WEB_CLIENT_ID || vars.HELM_GOOGLE_WEB_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file dist/release-notes.md

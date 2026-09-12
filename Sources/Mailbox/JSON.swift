@@ -1,4 +1,5 @@
 import Foundation
+import CoreFoundation
 
 enum JSON {
   static func object(_ raw: String) -> [String: Any]? {

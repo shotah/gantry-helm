@@ -70,3 +70,11 @@ public func paintedTheme(follow: Bool, roomTheme: String, mine: String) -> Strin
   }
   return knownTheme(roomTheme) ?? parseTheme(mine)
 }
+
+/// Header face — same numbers as pendant `KitAvatar` xl and Cab `KitAvatar`.
+public let headerFaceSize: Double = 82
+public let headerFaceSlotWidth: Double = 80
+public let headerFaceSlotHeight: Double = 40
+public let headerFaceNudgeX: Double = -2
+public let headerFaceNudgeY: Double = -4
+public let headerFaceStroke: Double = 2

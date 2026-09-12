@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# Pre-commit: script tests + Mailbox tests. Coverage is pre-push / CI.
+set -eu
+
+ROOT=$(git rev-parse --show-toplevel)
+cd "$ROOT"
+
+echo "==> Script tests"
+make test-scripts
+
+echo "==> Mailbox tests"
+make test-app
+
+echo "Pre-commit checks passed."

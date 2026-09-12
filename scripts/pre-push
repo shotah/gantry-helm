@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+# Pre-push: Mailbox tests + 70% coverage.
+set -eu
+
+ROOT=$(git rev-parse --show-toplevel)
+cd "$ROOT"
+
+echo "==> Mailbox tests + coverage"
+make check-app
+
+echo "Pre-push checks passed."

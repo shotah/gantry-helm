@@ -30,13 +30,14 @@ public func googleSignInHint(className: String, message: String?, causeLines: [S
 
 public func googleSignInHint(_ err: Error) -> String {
   var causes: [String] = []
-  var ns = err as NSError
-  var current: Error? = ns
-  // Walk NSUnderlyingErrorKey once; Swift errors rarely chain like Java.
-  if let under = ns.userInfo[NSUnderlyingErrorKey] as? NSError {
+  let ns = err as NSError
+  if let under = ns.userInfo[NSUnderlyingErrorKey] as? Error {
     let m = under.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
     causes.append(m.isEmpty ? String(describing: type(of: under)) : "\(type(of: under)): \(m)")
   }
-  _ = current
-  return googleSignInHint(className: String(describing: type(of: err)), message: err.localizedDescription, causeLines: causes)
+  return googleSignInHint(
+    className: String(describing: type(of: err)),
+    message: err.localizedDescription,
+    causeLines: causes
+  )
 }

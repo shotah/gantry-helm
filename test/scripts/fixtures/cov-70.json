@@ -1,0 +1,12 @@
+{
+  "data": [
+    {
+      "files": [
+        {
+          "filename": "/src/Sources/Mailbox/Wire.swift",
+          "summary": { "lines": { "count": 10, "covered": 7 } }
+        }
+      ]
+    }
+  ]
+}

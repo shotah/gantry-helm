@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>en</string>
+  <key>CFBundleDisplayName</key>
+  <string>Helm</string>
+  <key>CFBundleExecutable</key>
+  <string>$(EXECUTABLE_NAME)</string>
+  <key>CFBundleIdentifier</key>
+  <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundleName</key>
+  <string>Helm</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>$(MARKETING_VERSION)</string>
+  <key>CFBundleVersion</key>
+  <string>$(CURRENT_PROJECT_VERSION)</string>
+  <key>LSRequiresIPhoneOS</key>
+  <true/>
+  <key>UILaunchScreen</key>
+  <dict/>
+  <key>UISupportedInterfaceOrientations</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationLandscapeLeft</string>
+    <string>UIInterfaceOrientationLandscapeRight</string>
+  </array>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>Helm can send a pin with your turn so Kit knows where you are. Off in Settings until you toggle GPS.</string>
+  <key>NSCameraUsageDescription</key>
+  <string>Helm sends a JPEG of what you photograph, with your caption, as one inbound.</string>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>Helm sends a JPEG from your library, with your caption, as one inbound.</string>
+  <key>NSUserNotificationsUsageDescription</key>
+  <string>Kit’s replies arrive as a message card. CarPlay reads them aloud.</string>
+  <key>HelmMailboxOrigin</key>
+  <string>$(HELM_MAILBOX_ORIGIN)</string>
+  <key>HelmGoogleWebClientId</key>
+  <string>$(HELM_GOOGLE_WEB_CLIENT_ID)</string>
+  <key>HelmGoogleIosClientId</key>
+  <string>$(HELM_GOOGLE_IOS_CLIENT_ID)</string>
+  <key>GIDClientID</key>
+  <string>$(HELM_GOOGLE_IOS_CLIENT_ID)</string>
+  <key>GIDServerClientID</key>
+  <string>$(HELM_GOOGLE_WEB_CLIENT_ID)</string>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>$(HELM_GOOGLE_REVERSED_CLIENT_ID)</string>
+      </array>
+    </dict>
+  </array>
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <false/>
+  </dict>
+</dict>
+</plist>

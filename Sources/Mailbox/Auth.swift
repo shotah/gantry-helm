@@ -86,11 +86,7 @@ public func parseNonce(_ raw: String) -> String? {
 }
 
 public func parseMe(_ raw: String) throws -> Me {
-  guard let o = JSON.object(raw), let sub = JSON.string(o, "sub") ?? (o["sub"] as? String) else {
-    throw AuthError(code: 0, body: raw)
-  }
-  let subValue = (JSON.string(o, "sub") ?? (o["sub"] as? String) ?? "")
-  if subValue.isEmpty {
+  guard let o = JSON.object(raw), let subValue = JSON.string(o, "sub") else {
     throw AuthError(code: 0, body: raw)
   }
   var cranes: [String] = []
