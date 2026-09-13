@@ -44,5 +44,29 @@ if [[ -z "$LLVM_COV" ]]; then
 fi
 
 mkdir -p "$(dirname "$OUT")"
-"$LLVM_COV" export -format=json -instr-profile="$PROF" "$EXE" > "$OUT"
+# Hosted Swift llvm-cov often has json. Docker 5.10/6.3 only have text/html/lcov.
+if "$LLVM_COV" export -format=json -instr-profile="$PROF" "$EXE" > "$OUT" 2>/dev/null; then
+  echo "wrote $OUT"
+  exit 0
+fi
+LCOV="$(mktemp)"
+trap 'rm -f "$LCOV"' EXIT
+"$LLVM_COV" export -format=lcov -instr-profile="$PROF" "$EXE" > "$LCOV"
+awk '
+BEGIN { printf "{\"data\":[{\"files\":[" }
+/^SF:/ {
+  filename = substr($0, 4)
+  gsub(/\\/, "\\\\", filename)
+  gsub(/"/, "\\\"", filename)
+  covered = 0
+  count = 0
+}
+/^LH:/ { covered = substr($0, 4) + 0 }
+/^LF:/ { count = substr($0, 4) + 0 }
+/^end_of_record$/ {
+  if (n++) printf ","
+  printf "{\"filename\":\"%s\",\"summary\":{\"lines\":{\"covered\":%d,\"count\":%d}}}", filename, covered, count
+}
+END { print "]}]}" }
+' "$LCOV" > "$OUT"
 echo "wrote $OUT"

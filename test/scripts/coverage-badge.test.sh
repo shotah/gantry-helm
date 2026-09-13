@@ -23,6 +23,14 @@ assert_eq() {
 assert_eq "$("$pct" "$fix90")" "90" "scoped mailbox 90%"
 assert_eq "$("$pct" "$fix70")" "70" "exactly 70%"
 assert_eq "$("$pct" "$fix69")" "69" "69%"
+assert_eq "$("$pct" "$root/test/scripts/fixtures/lcov-90.info")" "90" "lcov mailbox 90%"
+assert_eq "$("$pct" "$root/test/scripts/fixtures/lcov-70.info")" "70" "lcov exactly 70%"
+assert_eq "$("$pct" "$root/test/scripts/fixtures/lcov-69.info")" "69" "lcov 69%"
+
+grep -q 'format=lcov' "$root/scripts/coverage-export.sh" || {
+  echo "FAIL: coverage-export should fall back to lcov when json is missing" >&2
+  exit 1
+}
 
 "$badge" "$fix90" "$out"
 grep -q 'aria-label="coverage: 90%"' "$out" || {

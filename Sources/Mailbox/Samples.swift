@@ -81,14 +81,14 @@ public func sampleScene(_ id: String) -> SampleScene? {
       email: "ada@example.com",
       up: true,
       hint: "pin ±12m this send",
-      typing: true,
       lines: [
         sampleLine("s1", true, "On the dock — is the gate still open?"),
         ChatLine(
           id: draftId, fromYou: false, text: "Gate's on the latch until 21:00. I'll ping you at…",
           kind: "draft", live: true
         ),
-      ]
+      ],
+      typing: true
     )
   case "photo":
     return SampleScene(
