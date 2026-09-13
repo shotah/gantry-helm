@@ -46,6 +46,15 @@ letting another app read the thread are the failures that matter.
       writes `prefs.lastGeo`. Drop a pin / attach-on-send use that fix.
 - [x] **Socket sweep timer.** `watchingThread` + `sweepEveryMs` call
       `MailboxSocket.sweep` so a sibling inbound can flush.
+- [x] **`scenePhase` for `resumed`.** Opening Settings no longer flips
+      `resumed` via `onDisappear`. Kit HUNs stay suppressed while the
+      scene is `.active`.
+- [x] **Status bar typing.** `threadStatusLine` paints `Live · typing…`
+      while `typingUntil` is live (`stream` sample / Kit draft).
+- [x] **Battery + net on send.** Same `PhoneContext` fields as Cab.
+      `UIDevice` level + `NWPathMonitor` peek.
+- [x] **DEBUG sample chips.** Settings paints `sampleIds`. Release
+      strips them. Does not persist or connect.
 
 ## Medium
 
@@ -61,7 +70,9 @@ letting another app read the thread are the failures that matter.
 ## Large
 
 - [ ] **CarPlay conversation screen** only if Apple grants the
-      messaging entitlement. Sideload product is the notification card.
+      messaging entitlement. Sideload product is the notification
+      card (`INSendMessageIntent` + Reply). Head-unit detect is the
+      car-audio route (`HelmCar`), not a tile.
 - [ ] **Replace hand-painted shots** once the UI settles. Cab’s
       `DocsShot` lesson: do not maintain a second painter.
 

@@ -16,7 +16,7 @@ help: ## Show available targets
 	@echo
 	@echo gantry-helm targets:
 	@echo "  make test            Script tests + Mailbox Swift tests"
-	@echo "  make test-scripts    Semver + badge + release + hooks + helm-bake (no Swift)"
+	@echo "  make test-scripts    Semver + badge + release + hooks + helm-bake + glue (no Swift)"
 	@echo "  make test-app        Mailbox tests in Docker (\$$SWIFT_IMAGE)"
 	@echo "                       FILTER=SamplesTests to narrow"
 	@echo "  make coverage       Docker swift test --enable-code-coverage + 70% bar"
@@ -42,6 +42,8 @@ test-scripts: ## Semver + coverage-badge + release + hooks + bake (no Swift tool
 	./test/scripts/release.test.sh
 	./test/scripts/hooks.test.sh
 	./test/scripts/helm-bake.test.sh
+	./test/scripts/helm-carplay.test.sh
+	./test/scripts/helm-glue.test.sh
 
 .PHONY: test-app
 test-app: ## Mailbox Swift tests (Docker)

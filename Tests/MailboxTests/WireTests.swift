@@ -258,6 +258,9 @@ final class WireTests: XCTestCase {
     XCTAssertEqual("wifi", netHint(wifi: true, cellular: true))
     XCTAssertEqual("cellular", netHint(wifi: false, cellular: true))
     XCTAssertEqual("unknown", netHint(wifi: false, cellular: false))
+    XCTAssertEqual(BatteryHint(pct: 80, charging: true), batteryHintFromLevel(0.8, charging: true))
+    XCTAssertEqual(BatteryHint(pct: 100, charging: false), batteryHintFromLevel(0.995, charging: false))
+    XCTAssertNil(batteryHintFromLevel(-1, charging: false))
   }
 
   func testInboundImagesRejectOversizeDataAndLongHttp() {

@@ -16,6 +16,17 @@ public func clearsTyping(_ kind: String?) -> Bool {
   kind == "reply" || kind == "push" || kind == "error"
 }
 
+/// Caption under the crane name. Typing wins while the TTL is live.
+public func threadStatusLine(up: Bool, hint: String, typingUntil: Int64, nowMs: Int64) -> String {
+  if !up {
+    return hint.isEmpty ? "Offline" : hint
+  }
+  if typingUntil > nowMs {
+    return "Live · typing…"
+  }
+  return hint.isEmpty ? "Live" : hint
+}
+
 public struct ChatLine: Equatable, ThreadOrder {
   public var id: String
   public var fromYou: Bool

@@ -140,6 +140,25 @@ struct HelmSettings: View {
         .foregroundStyle(Color(rgb: colors.dim))
         Button("Test car voice") { model.carTest() }
           .accessibilityLabel("test car voice")
+        #if DEBUG
+        if HelmConfig.debug {
+          Text("Samples").font(.caption).foregroundStyle(Color(rgb: colors.muted))
+          ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+              ForEach(sampleIds, id: \.self) { id in
+                chip(id, on: false) {
+                  model.applySample(id)
+                  model.showSettings = false
+                }
+              }
+            }
+          }
+          .accessibilityLabel("debug samples")
+          Text("DEBUG only. Does not persist or connect.")
+            .font(.caption)
+            .foregroundStyle(Color(rgb: colors.dim))
+        }
+        #endif
         HStack {
           Button("Connect") { model.connect() }
             .buttonStyle(.bordered)

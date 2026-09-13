@@ -7,9 +7,11 @@ CarPlay reads Kit aloud and stuffs a spoken reply into the same
 `inbound` frame the phone compose uses. Helm does not wrap the
 Vinext PWA. It does not run a second mailbox.
 
-`NotifyGate` already decides when a communication notification may
-post (`shouldPost`, `shouldBuzz`, `carTestBlocked`, test-car copy).
-The conversation template and the entitlement are app work.
+`NotifyGate` decides when a communication notification may post
+(`shouldPost`, `shouldBuzz`, `kitNoticeBody`, test-car copy).
+`HelmCar` sets `carAttached` from the car-audio route — Cab’s
+`CarConnection` cousin, no entitlement. The conversation **tile**
+and the messaging entitlement are still app + Apple paperwork.
 
 ## Shape
 

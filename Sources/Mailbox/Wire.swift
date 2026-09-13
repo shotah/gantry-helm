@@ -310,6 +310,14 @@ public func batteryHint(pct: Int, charging: Bool) -> BatteryHint? {
   return BatteryHint(pct: pct, charging: charging)
 }
 
+/// `UIDevice.batteryLevel` is 0...1, or negative if unknown.
+public func batteryHintFromLevel(_ level: Float, charging: Bool) -> BatteryHint? {
+  if level < 0 {
+    return nil
+  }
+  return batteryHint(pct: Int((level * 100).rounded()), charging: charging)
+}
+
 public func netHint(wifi: Bool, cellular: Bool) -> String {
   if wifi {
     return "wifi"

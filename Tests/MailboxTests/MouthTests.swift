@@ -338,4 +338,15 @@ final class MouthTests: XCTestCase {
     mouth.ingest(WireFrame(kind: "ack", id: "a1"))
     XCTAssertEqual(false, mouth.lines[0].pending)
   }
+
+  func testStatusLinePrefersTypingWhileTheTtlIsLive() {
+    XCTAssertEqual("Offline", threadStatusLine(up: false, hint: "", typingUntil: 9, nowMs: 1))
+    XCTAssertEqual(
+      "socket down — reconnecting",
+      threadStatusLine(up: false, hint: "socket down — reconnecting", typingUntil: 9, nowMs: 1)
+    )
+    XCTAssertEqual("Live · typing…", threadStatusLine(up: true, hint: "Live", typingUntil: 9, nowMs: 1))
+    XCTAssertEqual("pin ±12m this send", threadStatusLine(up: true, hint: "pin ±12m this send", typingUntil: 1, nowMs: 1))
+    XCTAssertEqual("Live", threadStatusLine(up: true, hint: "", typingUntil: 0, nowMs: 1))
+  }
 }

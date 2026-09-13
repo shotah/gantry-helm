@@ -6,6 +6,7 @@ import UIKit
 
 struct HelmRoot: View {
   @EnvironmentObject var model: HelmModel
+  @Environment(\.scenePhase) private var scenePhase
 
   var body: some View {
     let colors = helmColors(model.paintedTheme)
@@ -16,6 +17,9 @@ struct HelmRoot: View {
         }
     }
     .tint(Color(rgb: colors.accent))
+    .onChange(of: scenePhase) { phase in
+      model.resumed = phase == .active
+    }
   }
 }
 
@@ -38,9 +42,11 @@ struct HelmScreen: View {
             Text(name)
               .font(.headline)
               .foregroundStyle(Color(rgb: colors.fg))
-            Text(statusLine)
-              .font(.caption)
-              .foregroundStyle(Color(rgb: colors.muted))
+            TimelineView(.periodic(from: .now, by: 0.5)) { timeline in
+              Text(statusLine(now: timeline.date))
+                .font(.caption)
+                .foregroundStyle(Color(rgb: colors.muted))
+            }
           }
           Spacer()
           Button {
@@ -64,21 +70,19 @@ struct HelmScreen: View {
     }
     .onAppear {
       HelmNotify.setup()
-      model.resumed = true
       if !model.sampleShown && model.mouth.lines.isEmpty && !model.bearer.isEmpty {
         model.connect()
       }
     }
-    .onDisappear {
-      model.resumed = false
-    }
   }
 
-  private var statusLine: String {
-    if model.up {
-      return model.hint.isEmpty ? "Live" : model.hint
-    }
-    return model.hint.isEmpty ? "Offline" : model.hint
+  private func statusLine(now: Date) -> String {
+    threadStatusLine(
+      up: model.up,
+      hint: model.hint,
+      typingUntil: model.typingUntil,
+      nowMs: Int64(now.timeIntervalSince1970 * 1000)
+    )
   }
 }
 

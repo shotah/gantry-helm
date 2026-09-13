@@ -22,7 +22,7 @@ ignore a `sample` launch argument.
 | `phone-stream` | `stream` | Draft bubble + `Live · typing…`. |
 | `phone-photo` | `photo` | Hatch photo in a you-bubble. |
 | `phone-down` | `down` | Socket down; local echo still `sending`. |
-| `phone-settings` | `empty` | Settings: origin, slug, theme catalog, font, photo size, follow Kit, backdrop, Test car voice. |
+| `phone-settings` | `empty` | Settings: origin, slug, theme catalog, font, photo size, follow Kit, backdrop, Test car voice. DEBUG builds also chip `sampleIds`. |
 | `phone-emoji` | `thread` | Emoji picker over compose. |
 | `phone-attach` | `thread` | Paperclip: photo, camera, commands, GPS, pin. |
 | `phone-draft` | `thread` | Staged photo on compose: thumbnail + Remove; Send carries caption + JPEG. |

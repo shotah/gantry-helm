@@ -33,6 +33,58 @@ public func carTestBlocked(notificationsEnabled: Bool, channelImportance: Int?) 
   !notificationsEnabled || (channelImportance != nil && channelImportance! < 4)
 }
 
+/// Communication notification category. CarPlay reads this card; Reply
+/// uses `kitReplyAction`. Must stay in lockstep with `HelmNotify`.
+public let kitReplyCategory = "kit.reply"
+public let kitReplyAction = "reply"
+public let kitReplyThread = "kit"
+public let kitReplyPreview = "Kit"
+/// `AVAudioSession.Port.carAudio.rawValue` — CarPlay / car Bluetooth.
+public let carAudioPort = "CarAudio"
+
+/// Cab watches `CarConnection`. Helm watches the car-audio route.
+public func carPlayRouteAttached(portTypes: [String]) -> Bool {
+  portTypes.contains(carAudioPort)
+}
+
+/// Spoken Reply / lock-screen text. Empty is not a turn.
+public func carPlayReplyText(_ raw: String?) -> String? {
+  let t = raw?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+  return t.isEmpty ? nil : t
+}
+
+/**
+ Body of the Kit card Helm would post, or nil if the gate skips it.
+ Same decisions as `HelmModel.ingest` — test this, not UIKit.
+ */
+public func kitNoticeBody(
+  painted: Bool,
+  kind: String?,
+  replay: Bool,
+  resumed: Bool,
+  carAttached: Bool,
+  threadVisible: Bool,
+  text: String?,
+  hasPhoto: Bool
+) -> String? {
+  if !painted {
+    return nil
+  }
+  if !shouldSpeak(kind, replay: replay) {
+    return nil
+  }
+  if !shouldPost(
+    resumed: resumed, carAttached: carAttached, kind: kind, threadVisible: threadVisible
+  ) {
+    return nil
+  }
+  return notifyBody(text, hasPhoto: hasPhoto)
+}
+
+public func shouldSweepNow(watching: Bool, openedAt: Int64, now: Int64) -> Bool {
+  watching && now - openedAt >= sweepMinGapMs
+}
+
 /**
  Body of the Kit notification posted by Settings → **Test car voice**.
  Goes through the same communication notification as a real reply, so

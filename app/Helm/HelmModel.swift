@@ -3,6 +3,9 @@ import Foundation
 import Mailbox
 import UserNotifications
 
+#if canImport(Network)
+import Network
+#endif
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -18,6 +21,7 @@ final class HelmModel: ObservableObject {
   private var blobs: AvatarApi?
   private let notify = HelmNotifyDelegate()
   private let location = HelmLocation()
+  private let net = HelmNet()
   private var sweepTimer: Timer?
   private(set) var sampleShown = false
 
@@ -103,6 +107,12 @@ final class HelmModel: ObservableObject {
     if gpsOn {
       location.setEnabled(true)
     }
+    HelmCar.start { [weak self] attached in
+      Task { @MainActor in
+        self?.carAttached = attached
+      }
+    }
+    net.start()
     startSweep()
   }
 
@@ -226,12 +236,7 @@ final class HelmModel: ObservableObject {
       return
     }
     let id = UUID().uuidString
-    let ctx = PhoneContext(
-      at: ISO8601DateFormatter().string(from: Date()),
-      tz: TimeZone.current.identifier,
-      geo: gpsOn ? prefs.lastGeo : nil,
-      surface: surfaceHint(carAttached: carAttached)
-    )
+    let ctx = currentContext(geo: gpsOn ? prefs.lastGeo : nil)
     let frame = inbound(compose, id: id, context: ctx, images: photo.map { [$0] })
     mouth.add(
       ChatLine(
@@ -261,7 +266,7 @@ final class HelmModel: ObservableObject {
       publish()
       return
     }
-    let frame = pinFrame(PhoneContext(geo: geo, surface: surfaceHint(carAttached: carAttached)))
+    let frame = pinFrame(currentContext(geo: geo))
     if socket?.send(frame) != true {
       _ = outbox.push(frame)
       connect()
@@ -273,19 +278,17 @@ final class HelmModel: ObservableObject {
   func ingest(_ frame: WireFrame) {
     seen.note(frame: frame)
     let painted = mouth.ingest(frame)
-    if painted && shouldSpeak(frame.kind, replay: frame.replay)
-      && shouldPost(
-        resumed: resumed,
-        carAttached: carAttached,
-        kind: frame.kind,
-        threadVisible: carThreadVisible
-      )
-    {
-      HelmNotify.postKit(
-        slug: slug,
-        body: notifyBody(frame.text, hasPhoto: frame.images?.isEmpty == false),
-        replay: frame.replay
-      )
+    if let body = kitNoticeBody(
+      painted: painted,
+      kind: frame.kind,
+      replay: frame.replay,
+      resumed: resumed,
+      carAttached: carAttached,
+      threadVisible: carThreadVisible,
+      text: frame.text,
+      hasPhoto: frame.images?.isEmpty == false
+    ) {
+      HelmNotify.postKit(slug: slug, body: body, replay: false)
     }
     publish()
     persistThread()
@@ -370,6 +373,37 @@ final class HelmModel: ObservableObject {
     publish()
   }
 
+  func currentContext(geo: Geo?) -> PhoneContext {
+    PhoneContext(
+      at: ISO8601DateFormatter().string(from: Date()),
+      tz: TimeZone.current.identifier,
+      geo: geo,
+      battery: peekBattery(),
+      net: peekNet(),
+      surface: surfaceHint(carAttached: carAttached)
+    )
+  }
+
+  func peekBattery() -> BatteryHint? {
+    #if canImport(UIKit)
+    let device = UIDevice.current
+    let wasOn = device.isBatteryMonitoringEnabled
+    device.isBatteryMonitoringEnabled = true
+    let level = device.batteryLevel
+    let charging = device.batteryState == .charging || device.batteryState == .full
+    if !wasOn {
+      device.isBatteryMonitoringEnabled = false
+    }
+    return batteryHintFromLevel(level, charging: charging)
+    #else
+    return nil
+    #endif
+  }
+
+  func peekNet() -> String {
+    net.hint()
+  }
+
   private func flushOutbox() {
     for frame in outbox.popAll() {
       _ = socket?.send(frame)
@@ -434,6 +468,37 @@ final class HelmModel: ObservableObject {
     backdropRev = mouth.backdropRev
     typingUntil = mouth.typingUntil
     objectWillChange.send()
+  }
+}
+
+/// Cached `NWPathMonitor` so send can peek without waiting.
+final class HelmNet {
+  #if canImport(Network)
+  private let monitor = NWPathMonitor()
+  private let queue = DispatchQueue(label: "com.gantree.helm.net")
+  #endif
+  private let lock = NSLock()
+  private var lastHint = "unknown"
+
+  func start() {
+    #if canImport(Network)
+    monitor.pathUpdateHandler = { [weak self] path in
+      let hint = netHint(
+        wifi: path.usesInterfaceType(.wifi),
+        cellular: path.usesInterfaceType(.cellular)
+      )
+      self?.lock.lock()
+      self?.lastHint = hint
+      self?.lock.unlock()
+    }
+    monitor.start(queue: queue)
+    #endif
+  }
+
+  func hint() -> String {
+    lock.lock()
+    defer { lock.unlock() }
+    return lastHint
   }
 }
 

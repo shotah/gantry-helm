@@ -4,12 +4,12 @@ import UserNotifications
 import Intents
 
 enum HelmNotify {
-  static let category = "kit.reply"
-  static let thread = "kit"
+  static let category = kitReplyCategory
+  static let thread = kitReplyThread
 
   static func setup() {
     let reply = UNTextInputNotificationAction(
-      identifier: "reply",
+      identifier: kitReplyAction,
       title: "Reply",
       options: [],
       textInputButtonTitle: "Send",
@@ -19,7 +19,7 @@ enum HelmNotify {
       identifier: category,
       actions: [reply],
       intentIdentifiers: [INSendMessageIntent.intentIdentifier],
-      hiddenPreviewsBodyPlaceholder: "Kit",
+      hiddenPreviewsBodyPlaceholder: kitReplyPreview,
       options: [.allowInCarPlay, .allowAnnouncement]
     )
     UNUserNotificationCenter.current().setNotificationCategories([cat])
@@ -80,7 +80,7 @@ final class HelmNotifyDelegate: NSObject, UNUserNotificationCenterDelegate {
     didReceive response: UNNotificationResponse,
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
-    if let text = (response as? UNTextInputNotificationResponse)?.userText, !text.isEmpty {
+    if let text = carPlayReplyText((response as? UNTextInputNotificationResponse)?.userText) {
       onReply?(text)
     }
     completionHandler()

@@ -58,7 +58,7 @@ final class MailboxSocket: NSObject, URLSessionWebSocketDelegate {
 
   @discardableResult
   func sweep(now: Int64 = Int64(Date().timeIntervalSince1970 * 1000)) -> Bool {
-    guard let room, !stopped, now - openedAt >= sweepMinGapMs else {
+    guard let room, !stopped, shouldSweepNow(watching: true, openedAt: openedAt, now: now) else {
       return false
     }
     connect(origin: room.origin, slug: room.slug, bearer: room.bearer)
