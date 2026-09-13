@@ -22,6 +22,7 @@ help: ## Show available targets
 	@echo "  make coverage       Docker swift test --enable-code-coverage + 70% bar"
 	@echo "  make check-app       test + coverage"
 	@echo "  make check           script tests + check-app"
+	@echo "  make bake            .env → app/Helm.local.xcconfig (gitignored)"
 	@echo "  make ios             xcodebuild Simulator, unsigned (macOS / Actions)"
 	@echo "  make install-hooks   Pre-commit: tests. Pre-push: coverage."
 	@echo "  make version         Show VERSION + next tag (dry-run)"
@@ -69,6 +70,10 @@ check-app: coverage ## Mailbox tests + 70% coverage
 
 .PHONY: check
 check: test-scripts check-app ## Script tests + Mailbox tests + 70% coverage
+
+.PHONY: bake
+bake: ## Write app/Helm.local.xcconfig from .env
+	./scripts/helm-bake.sh
 
 .PHONY: ios
 ios: ## Build the iOS app unsigned (needs Xcode)

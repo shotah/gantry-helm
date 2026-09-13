@@ -2,6 +2,7 @@
 .swiftpm/
 .DS_Store
 .env
+app/Helm.local.xcconfig
 xcuserdata/
 DerivedData/
 *.xcuserstate

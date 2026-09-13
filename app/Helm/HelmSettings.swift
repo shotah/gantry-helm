@@ -110,6 +110,15 @@ struct HelmSettings: View {
         Text("Smaller sends faster and costs fewer tokens to look at.")
           .font(.caption)
           .foregroundStyle(Color(rgb: colors.dim))
+        Toggle(isOn: Binding(
+          get: { model.gpsOn },
+          set: { model.setGps($0) }
+        )) {
+          Text("GPS this send")
+        }
+        Text(model.gpsOn ? geoHint(enabled: true, geo: model.prefs.lastGeo) : "GPS off")
+          .font(.caption)
+          .foregroundStyle(Color(rgb: colors.dim))
         Toggle("Follow Kit's mood", isOn: $model.followTheme)
         Text("When on, \(displaySlug(model.slug)) picks the color theme. Off keeps the one you pick.")
           .font(.caption)

@@ -65,7 +65,7 @@ struct HelmScreen: View {
     .onAppear {
       HelmNotify.setup()
       model.resumed = true
-      if model.mouth.lines.isEmpty && !model.bearer.isEmpty {
+      if !model.sampleShown && model.mouth.lines.isEmpty && !model.bearer.isEmpty {
         model.connect()
       }
     }

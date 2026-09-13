@@ -50,7 +50,7 @@ struct HelmCompose: View {
           Button("Photo") { picking = true }
           Button("Camera") { camera = true }
           Button("Commands") { model.compose = "/" }
-          Button("GPS this send") { model.gpsOn.toggle() }
+          Button("GPS this send") { model.setGps(!model.gpsOn) }
           Button("Drop a pin") { model.sendPin() }
         } label: {
           Image(systemName: "paperclip")

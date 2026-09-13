@@ -1,6 +1,7 @@
 import Combine
 import Foundation
 import Mailbox
+import UserNotifications
 
 #if canImport(UIKit)
 import UIKit
@@ -15,6 +16,10 @@ final class HelmModel: ObservableObject {
   private var socket: MailboxSocket?
   private var cache: ThreadCache?
   private var blobs: AvatarApi?
+  private let notify = HelmNotifyDelegate()
+  private let location = HelmLocation()
+  private var sweepTimer: Timer?
+  private(set) var sampleShown = false
 
   @Published var origin: String
   @Published var slug: String
@@ -63,7 +68,7 @@ final class HelmModel: ObservableObject {
     )
   }
 
-  init() {
+  init(sample: String? = nil) {
     origin = prefs.origin
     slug = prefs.slug
     spike = prefs.spike
@@ -78,9 +83,77 @@ final class HelmModel: ObservableObject {
     googleReady = !HelmConfig.googleWebClientId.trimmingCharacters(in: .whitespaces).isEmpty
     cache = ThreadCache(file: HelmPrefs.threadFile)
     blobs = AvatarApi(transport: URLSessionTransport(), cache: BlobCache(dir: HelmPrefs.blobDir))
-    hydrateDisk()
+    bindNotifyReply()
+    location.onFix = { [weak self] geo in
+      Task { @MainActor in
+        self?.prefs.lastGeo = geo
+        if self?.gpsOn == true {
+          self?.mouth.setHint(geoHint(enabled: true, geo: geo))
+          self?.publish()
+        }
+      }
+    }
+    if HelmConfig.debug, let id = parseSample(sample) {
+      applySample(id)
+    } else {
+      hydrateDisk()
+      publish()
+      refreshLook()
+    }
+    if gpsOn {
+      location.setEnabled(true)
+    }
+    startSweep()
+  }
+
+  func applySample(_ id: String) {
+    guard HelmConfig.debug, let scene = sampleScene(id) else {
+      return
+    }
+    sampleShown = true
+    slug = scene.slug
+    email = scene.email
+    paintSample(mouth, scene: scene)
+    stagedPhoto = nil
     publish()
-    refreshLook()
+  }
+
+  func bindNotifyReply() {
+    notify.onReply = { [weak self] text in
+      Task { @MainActor in
+        guard let self else {
+          return
+        }
+        self.compose = text
+        self.sendText()
+      }
+    }
+    UNUserNotificationCenter.current().delegate = notify
+  }
+
+  func setGps(_ on: Bool) {
+    gpsOn = on
+    persistFields()
+    location.setEnabled(on)
+    mouth.setHint(geoHint(enabled: on, geo: on ? prefs.lastGeo : nil))
+    publish()
+  }
+
+  func startSweep() {
+    sweepTimer?.invalidate()
+    let seconds = TimeInterval(sweepEveryMs) / 1000
+    sweepTimer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: true) { [weak self] _ in
+      Task { @MainActor in
+        self?.tickSweep()
+      }
+    }
+  }
+
+  func tickSweep() {
+    guard watchingThread(phoneResumed: resumed, carThreadVisible: carThreadVisible) else {
+      return
+    }
+    _ = socket?.sweep()
   }
 
   func persistFields() {
@@ -142,6 +215,7 @@ final class HelmModel: ObservableObject {
       )
     }
     socket?.start(origin: origin, slug: slug, bearer: bearer)
+    startSweep()
     refreshLook()
   }
 
@@ -342,6 +416,9 @@ final class HelmModel: ObservableObject {
   }
 
   private func persistThread() {
+    if sampleShown {
+      return
+    }
     let room = ThreadRoom(origin: origin, slug: slug, user: email)
     cache?.write(room, lines: mouth.lines)
     prefs.putRoomTheme(slug, id: mouth.roomTheme)

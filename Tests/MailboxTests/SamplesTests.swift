@@ -46,6 +46,23 @@ final class SamplesTests: XCTestCase {
     XCTAssertEqual("This the right hatch?", photo.lines.first?.text)
   }
 
+  func testLaunchSampleIdReadsDashAndEquals() {
+    XCTAssertEqual("thread", launchSampleId(["Helm", "-sample", "Thread"]))
+    XCTAssertEqual("photo", launchSampleId(["--sample=photo"]))
+    XCTAssertNil(launchSampleId(["-sample"]))
+    XCTAssertNil(launchSampleId(["--sample=nope"]))
+    XCTAssertNil(launchSampleId([]))
+  }
+
+  func testPaintSamplePutsDraftAndTypingOnTheMouth() {
+    let mouth = Mouth(now: { 1_000 })
+    paintSample(mouth, scene: sampleScene("stream")!)
+    XCTAssertTrue(mouth.up)
+    XCTAssertEqual("draft", mouth.lines.last?.kind)
+    XCTAssertEqual(draftId, mouth.lines.last?.id)
+    XCTAssertGreaterThan(mouth.typingUntil, 0)
+  }
+
   func testReversedGoogleClientIdIsTheUrlScheme() {
     XCTAssertEqual(
       "com.googleusercontent.apps.prefix",

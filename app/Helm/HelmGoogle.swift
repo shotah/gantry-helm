@@ -8,6 +8,15 @@ import UIKit
 #endif
 
 enum HelmGoogle {
+  @discardableResult
+  static func handle(_ url: URL) -> Bool {
+    #if canImport(GoogleSignIn)
+    GIDSignIn.sharedInstance.handle(url)
+    #else
+    false
+    #endif
+  }
+
   static func signIn(
     webClientId: String,
     origin: String,

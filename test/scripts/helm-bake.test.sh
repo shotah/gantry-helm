@@ -39,6 +39,42 @@ grep -q 'HELM_GOOGLE_IOS_CLIENT_ID' "$root/.github/workflows/release.yml" || {
   exit 1
 }
 
+bake="$root/scripts/helm-bake.sh"
+test -x "$bake" || {
+  echo "FAIL: scripts/helm-bake.sh must be executable" >&2
+  exit 1
+}
+grep -qx 'app/Helm.local.xcconfig' "$root/.gitignore" || {
+  echo "FAIL: .gitignore must ignore app/Helm.local.xcconfig" >&2
+  exit 1
+}
+grep -q '#include? "Helm.local.xcconfig"' "$root/app/Helm.xcconfig" || {
+  echo "FAIL: Helm.xcconfig should include the local bake" >&2
+  exit 1
+}
+grep -q 'baseConfigurationReference' "$root/app/Helm.xcodeproj/project.pbxproj" || {
+  echo "FAIL: Xcode target should use Helm.xcconfig" >&2
+  exit 1
+}
+
+out="$(mktemp)"
+trap 'rm -f "$out"' EXIT
+HELM_BAKE_OUT="$out" \
+  HELM_MAILBOX_ORIGIN="https://pendant.example.com" \
+  HELM_GOOGLE_WEB_CLIENT_ID="web.example" \
+  HELM_GOOGLE_IOS_CLIENT_ID="prefix.apps.googleusercontent.com" \
+  "$bake"
+grep -q 'HELM_MAILBOX_ORIGIN = https://pendant.example.com' "$out" || {
+  echo "FAIL: bake should write origin" >&2
+  cat "$out" >&2
+  exit 1
+}
+grep -q 'HELM_GOOGLE_REVERSED_CLIENT_ID = com.googleusercontent.apps.prefix' "$out" || {
+  echo "FAIL: bake should derive the reversed iOS URL scheme" >&2
+  cat "$out" >&2
+  exit 1
+}
+
 plist="$root/app/Info.plist"
 grep -q 'com.gantree.helm\|PRODUCT_BUNDLE_IDENTIFIER' "$root/app/Helm.xcodeproj/project.pbxproj" || {
   echo "FAIL: Xcode project must set com.gantree.helm" >&2
@@ -55,6 +91,10 @@ if grep -q 'NSAllowsArbitraryLoads</key>$' "$plist"; then
     exit 1
   fi
 fi
+grep -q '127.0.0.1' "$plist" || {
+  echo "FAIL: Info.plist ATS should allow simulator loopback" >&2
+  exit 1
+}
 
 debug_ats="$root/app/Helm/Debug-ATS.plist"
 grep -q '127.0.0.1' "$debug_ats" || {
@@ -67,7 +107,7 @@ if grep -q 'NSAllowsArbitraryLoads' "$debug_ats"; then
 fi
 
 if grep -rI --exclude-dir=.build --exclude-dir=.git --exclude-dir=.swiftpm \
-  --exclude=.env --exclude=helm-bake.test.sh \
+  --exclude=.env --exclude=Helm.local.xcconfig --exclude=helm-bake.test.sh \
   -n 'bldhosting' "$root"
 then
   echo "FAIL: personal mailbox host must not be in the public tree" >&2
@@ -75,7 +115,7 @@ then
 fi
 
 if grep -rI --exclude-dir=.build --exclude-dir=.git --exclude-dir=.swiftpm \
-  --exclude=.env --exclude=helm-bake.test.sh \
+  --exclude=.env --exclude=Helm.local.xcconfig --exclude=helm-bake.test.sh \
   -nE '[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com' "$root"
 then
   echo "FAIL: Google client id must not be in the public tree" >&2

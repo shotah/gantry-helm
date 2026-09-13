@@ -17,7 +17,8 @@ Family-beta install. App Store is not a goal.
    HELM_GOOGLE_IOS_CLIENT_ID=<new iOS client>
    ```
 
-   Fill-in walk: [setup.md](setup.md#google-production-worker).
+   Then `make bake`. Fill-in walk:
+   [setup.md](setup.md#google-production-worker).
 
 5. Run on the device. First launch: trust the developer cert
    (Settings → General → VPN & Device Management).

@@ -27,11 +27,10 @@ targets:
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1,2"
         INFOPLIST_FILE: Info.plist
-        HELM_MAILBOX_ORIGIN: ""
-        HELM_GOOGLE_WEB_CLIENT_ID: ""
-        HELM_GOOGLE_IOS_CLIENT_ID: ""
-        HELM_GOOGLE_REVERSED_CLIENT_ID: ""
         CODE_SIGN_STYLE: Automatic
+    configFiles:
+      Debug: Helm.xcconfig
+      Release: Helm.xcconfig
     dependencies:
       - package: Mailbox
         product: Mailbox

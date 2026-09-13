@@ -37,7 +37,8 @@ make test-scripts
 
 That is `semver`, `coverage-badge`, `release`, `hooks`, `helm-bake`.
 `helm-bake` refuses a real Worker host or a Google client id in the
-public tree.
+public tree. `make bake` writes gitignored `app/Helm.local.xcconfig`
+from `.env` (Nora / Simulator Google + origin).
 
 ## Mailbox tests (Docker)
 

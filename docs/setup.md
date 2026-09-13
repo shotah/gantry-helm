@@ -123,9 +123,9 @@ then Helm `POST`s `{ id_token, nonce }` to
    ```
 
    First two are the same strings as Cab’s `CAB_MAILBOX_ORIGIN` and
-   `CAB_GOOGLE_WEB_CLIENT_ID`. GitHub Releases / Nora’s Xcode bake
-   also read these as repo Actions secrets (or variables), plus
-   `HELM_GOOGLE_IOS_CLIENT_ID`.
+   `CAB_GOOGLE_WEB_CLIENT_ID`. Then `make bake` writes gitignored
+   `app/Helm.local.xcconfig` (reversed iOS URL scheme is derived).
+   GitHub also reads these as repo Actions secrets (or variables).
 
 3. Rebuild / Run on device, then Continue with Google. If the sheet
    never returns to Helm, the iOS client’s bundle id does not match

@@ -1,0 +1,6 @@
+// Defaults. `make bake` writes Helm.local.xcconfig from .env (gitignored).
+HELM_MAILBOX_ORIGIN =
+HELM_GOOGLE_WEB_CLIENT_ID =
+HELM_GOOGLE_IOS_CLIENT_ID =
+HELM_GOOGLE_REVERSED_CLIENT_ID =
+#include? "Helm.local.xcconfig"

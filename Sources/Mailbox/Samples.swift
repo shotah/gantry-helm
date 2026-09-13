@@ -35,6 +35,31 @@ public func parseSample(_ raw: String?) -> String? {
   return sampleIds.contains(id) ? id : nil
 }
 
+/// `-sample thread` or `--sample=thread`. Unknown ids are ignored.
+public func launchSampleId(_ args: [String]) -> String? {
+  if let i = args.firstIndex(of: "-sample"), args.indices.contains(i + 1) {
+    return parseSample(args[i + 1])
+  }
+  for arg in args {
+    if arg.hasPrefix("--sample=") {
+      return parseSample(String(arg.dropFirst("--sample=".count)))
+    }
+  }
+  return nil
+}
+
+/// Paint a canned scene. Hydrate skips drafts, so this uses `replace`.
+public func paintSample(_ mouth: Mouth, scene: SampleScene) {
+  mouth.replace(lines: scene.lines, up: scene.up, hint: scene.hint)
+  if scene.typing {
+    mouth.ingest(WireFrame(kind: "typing"))
+  }
+  mouth.setAvatarRev(0)
+  mouth.setBackdropRev(0)
+  mouth.setRoomTheme("")
+  mouth.setFaceHint("")
+}
+
 /// Canned Ada/Kit turns for Simulator `-sample thread`. Release ignores it.
 public func sampleScene(_ id: String) -> SampleScene? {
   guard let key = parseSample(id) else {

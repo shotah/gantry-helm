@@ -29,6 +29,23 @@ letting another app read the thread are the failures that matter.
 - [x] **Hydrate face / backdrop GET.** `AvatarApi` + `BlobCache` keep
       JPEG + rev on disk and send `If-None-Match`. Header face and
       thread wallpaper paint the bytes.
+- [x] **Google URL callback.** `onOpenURL` → `GIDSignIn.handle`.
+      Without it the sheet returns and the token never lands.
+- [x] **`-sample` launch argument.** DEBUG only. `Samples.swift` scenes
+      (`unsigned` / `empty` / `thread` / `stream` / `ping` / `photo` /
+      `down`). Release ignores it. Does not persist or connect.
+- [x] **`make bake`.** `.env` → gitignored `app/Helm.local.xcconfig`.
+      Reversed iOS client id is derived. Nora does not type secrets
+      into Xcode.
+- [x] **Loopback ATS.** `127.0.0.1` / `localhost` exception domains in
+      `Info.plist`. `NSAllowsArbitraryLoads` stays false.
+- [x] **Notification reply → send.** `HelmNotifyDelegate` is the
+      `UNUserNotificationCenter` delegate so CarPlay / lock-screen
+      Reply reaches `sendText`.
+- [x] **CoreLocation when GPS is on.** Toggle asks When In Use and
+      writes `prefs.lastGeo`. Drop a pin / attach-on-send use that fix.
+- [x] **Socket sweep timer.** `watchingThread` + `sweepEveryMs` call
+      `MailboxSocket.sweep` so a sibling inbound can flush.
 
 ## Medium
 
