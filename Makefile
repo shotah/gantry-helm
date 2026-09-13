@@ -1,11 +1,15 @@
 # gantry-helm — common operator commands
 # Usage: make <target>
 
-SWIFT       ?= swift
+SWIFT_IMAGE ?= swift:6.3.3
+FILTER      ?=
 COVERAGE_MIN ?= 70
 COVERAGE_JSON ?= .build/coverage.json
 COVERAGE_SVG ?= badges/coverage.svg
 BUMP ?= patch
+
+# Same image as CI / docs/development.md. Host has no Swift on this Deck.
+DOCKER_SWIFT = docker run --rm -v "$(CURDIR)":/src -w /src $(SWIFT_IMAGE)
 
 .PHONY: help
 help: ## Show available targets
@@ -13,8 +17,9 @@ help: ## Show available targets
 	@echo gantry-helm targets:
 	@echo "  make test            Script tests + Mailbox Swift tests"
 	@echo "  make test-scripts    Semver + badge + release + hooks + helm-bake (no Swift)"
-	@echo "  make test-app        swift test (Mailbox)"
-	@echo "  make coverage       llvm-cov JSON + 70% Mailbox bar"
+	@echo "  make test-app        Mailbox tests in Docker (\$$SWIFT_IMAGE)"
+	@echo "                       FILTER=SamplesTests to narrow"
+	@echo "  make coverage       Docker swift test --enable-code-coverage + 70% bar"
 	@echo "  make check-app       test + coverage"
 	@echo "  make check           script tests + check-app"
 	@echo "  make ios             xcodebuild Simulator, unsigned (macOS / Actions)"
@@ -23,7 +28,7 @@ help: ## Show available targets
 	@echo "  make release         Bump tag + latest, update VERSION, push"
 	@echo "  make clean           Remove .build"
 	@echo
-	@echo "Mailbox tests run on Linux and macOS (swift test). The IPA needs Xcode."
+	@echo "Mailbox tests run in Docker $(SWIFT_IMAGE). The IPA needs Xcode."
 	@echo
 
 .PHONY: all
@@ -38,16 +43,15 @@ test-scripts: ## Semver + coverage-badge + release + hooks + bake (no Swift tool
 	./test/scripts/helm-bake.test.sh
 
 .PHONY: test-app
-test-app: ## Mailbox Swift tests
-	$(SWIFT) test
+test-app: ## Mailbox Swift tests (Docker)
+	$(DOCKER_SWIFT) swift test $(if $(FILTER),--filter $(FILTER),)
 
 .PHONY: test
 test: test-scripts test-app ## Script tests + Mailbox tests
 
 .PHONY: coverage
-coverage: ## llvm-cov JSON + 70% bar
-	$(SWIFT) test --enable-code-coverage
-	./scripts/coverage-export.sh "$(COVERAGE_JSON)"
+coverage: ## llvm-cov JSON + 70% bar (export inside the image — llvm-cov is there)
+	$(DOCKER_SWIFT) bash -lc 'set -euo pipefail; swift test --enable-code-coverage $(if $(FILTER),--filter $(FILTER),); ./scripts/coverage-export.sh .build/coverage.json'
 	@$(MAKE) coverage-gate
 
 .PHONY: coverage-gate

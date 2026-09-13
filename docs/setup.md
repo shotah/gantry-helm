@@ -20,8 +20,9 @@ package at the repo root. iOS 17+.
 ### Without a Mac
 
 Linux and this Deck get the mailbox: `make test-scripts`, `swift test`
-in Docker (`swift:6.3.3`), coverage of `Sources/Mailbox`. That is the
-wire, mouth, themes, photo caps, avatar GET — not the screen.
+in Docker (`swift:6.3.3`), coverage of `Sources/Mailbox`. Exact
+commands: [development.md](development.md). That is the wire, mouth,
+themes, photo caps, avatar GET — not the screen.
 
 GitHub Actions `macos-latest` runs `make ios`: an unsigned Simulator
 build of `app/Helm`. That catches SwiftUI / GoogleSignIn / Photos

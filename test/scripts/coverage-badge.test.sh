@@ -31,6 +31,18 @@ grep -q 'format=lcov' "$root/scripts/coverage-export.sh" || {
   echo "FAIL: coverage-export should fall back to lcov when json is missing" >&2
   exit 1
 }
+grep -q 'SWIFT_IMAGE' "$root/Makefile" || {
+  echo "FAIL: Makefile should set SWIFT_IMAGE" >&2
+  exit 1
+}
+grep -q 'docker run --rm' "$root/Makefile" || {
+  echo "FAIL: Makefile should run Mailbox tests in Docker" >&2
+  exit 1
+}
+grep -q 'coverage-export.sh' "$root/Makefile" || {
+  echo "FAIL: make coverage should export inside the Swift image" >&2
+  exit 1
+}
 
 "$badge" "$fix90" "$out"
 grep -q 'aria-label="coverage: 90%"' "$out" || {

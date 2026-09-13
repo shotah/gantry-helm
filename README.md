@@ -116,6 +116,8 @@ Needs Swift 5.9+ for `swift test`. CI uses Swift 6.3.3 and Node 24.
 The IPA needs Xcode 15+ / iOS 17.
 Nested checkout under gantree (`repos/gantry-helm`), own git remote,
 same pattern as `repos/gantry-cab`. Walk: [docs/setup.md](docs/setup.md).
+Linux / this Deck (Docker `swift:6.3.3`, no host toolchain):
+[docs/development.md](docs/development.md).
 
 ```bash
 # on the pendant checkout
@@ -157,4 +159,5 @@ family-beta; it is if Helm becomes a public service. Design:
 Open work: [docs/todo.md](docs/todo.md). Mailbox handoff:
 [docs/pendant_handoff.md](docs/pendant_handoff.md). Phone install:
 [docs/sideload_to_ios.md](docs/sideload_to_ios.md). Make the car talk:
-[docs/carplay_setup.md](docs/carplay_setup.md).
+[docs/carplay_setup.md](docs/carplay_setup.md). Deck / Docker test
+walk: [docs/development.md](docs/development.md).
