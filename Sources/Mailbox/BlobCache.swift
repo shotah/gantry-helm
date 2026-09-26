@@ -11,12 +11,10 @@ public struct CachedBlob: Equatable {
   }
 }
 
-/**
- Last JPEG per room on disk, so the face and wallpaper paint on launch
- before the mailbox answers. Every launch still asks, with
- `If-None-Match: "<rev>"`. Rev is written last: a fresh rev on stale
- bytes would 304 forever.
- */
+/// Last JPEG per room on disk, so the face and wallpaper paint on launch
+/// before the mailbox answers. Every launch still asks, with
+/// `If-None-Match: "<rev>"`. Rev is written last: a fresh rev on stale
+/// bytes would 304 forever.
 public final class BlobCache {
   private let dir: URL
 

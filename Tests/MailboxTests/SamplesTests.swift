@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Mailbox
 
 final class SamplesTests: XCTestCase {

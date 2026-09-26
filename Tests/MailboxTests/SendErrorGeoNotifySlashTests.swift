@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Mailbox
 
 final class SendErrorGeoNotifySlashTests: XCTestCase {
@@ -13,7 +14,8 @@ final class SendErrorGeoNotifySlashTests: XCTestCase {
   }
 
   func testLocalPhotoFailuresSaySo() {
-    XCTAssertEqual("Photo not sent — still too big after shrinking.", describePhotoError("too large"))
+    XCTAssertEqual(
+      "Photo not sent — still too big after shrinking.", describePhotoError("too large"))
     XCTAssertEqual("Photo not sent — couldn't read that image.", describePhotoError("bad photo"))
     XCTAssertEqual("too large", photoErrorToken("image too large"))
     XCTAssertEqual("bad photo", photoErrorToken("could not read that image"))
@@ -33,11 +35,13 @@ final class SendErrorGeoNotifySlashTests: XCTestCase {
   func testTextSendDoesNotShoutOmittedGps() {
     XCTAssertNil(sendGeoHint(enabled: true, geo: nil))
     XCTAssertNil(sendGeoHint(enabled: false, geo: Geo(lat: 1.0, lon: 2.0, accuracyM: 3.0)))
-    XCTAssertEqual("pin ±3m this send", sendGeoHint(enabled: true, geo: Geo(lat: 1.0, lon: 2.0, accuracyM: 3.0)))
+    XCTAssertEqual(
+      "pin ±3m this send", sendGeoHint(enabled: true, geo: Geo(lat: 1.0, lon: 2.0, accuracyM: 3.0)))
   }
 
   func testGeoFromFixDropsOutOfRangeHeadingAndSpeed() {
-    let ok = geoFromFix(lat: 1.0, lon: 2.0, accuracyM: 3.0, altM: 10.0, heading: 359.9, speedMps: 0.0)
+    let ok = geoFromFix(
+      lat: 1.0, lon: 2.0, accuracyM: 3.0, altM: 10.0, heading: 359.9, speedMps: 0.0)
     XCTAssertEqual(10.0, ok.altM)
     XCTAssertEqual(359.9, ok.heading)
     XCTAssertEqual(0.0, ok.speedMps)
@@ -56,7 +60,8 @@ final class SendErrorGeoNotifySlashTests: XCTestCase {
     XCTAssertTrue(shouldPost(resumed: true, carAttached: true, kind: "reply"))
     XCTAssertTrue(shouldPost(resumed: false, carAttached: true, kind: "push"))
     XCTAssertTrue(shouldPost(resumed: false, carAttached: false, kind: "reply"))
-    XCTAssertFalse(shouldPost(resumed: false, carAttached: true, kind: "reply", threadVisible: true))
+    XCTAssertFalse(
+      shouldPost(resumed: false, carAttached: true, kind: "reply", threadVisible: true))
   }
 
   func testSilentKindsNeverPost() {
@@ -111,7 +116,8 @@ final class SendErrorGeoNotifySlashTests: XCTestCase {
     XCTAssertNil(slashToken("/brief google"))
     XCTAssertEqual([], matchSlash("hello", catalog: catalog))
     XCTAssertEqual(catalog.map(\.name), matchSlash("/", catalog: catalog).map(\.name))
-    XCTAssertEqual(["tools", "toolstats", "tokens"], matchSlash("/to", catalog: catalog).map(\.name))
+    XCTAssertEqual(
+      ["tools", "toolstats", "tokens"], matchSlash("/to", catalog: catalog).map(\.name))
     XCTAssertEqual(["new"], matchSlash("/new", catalog: catalog).map(\.name))
     XCTAssertEqual([], matchSlash("/xyz", catalog: catalog))
     XCTAssertEqual("/brief ", slashInsert(catalog.first { $0.name == "brief" }!))

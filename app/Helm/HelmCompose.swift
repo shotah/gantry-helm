@@ -1,7 +1,8 @@
-import SwiftUI
 import Mailbox
+import SwiftUI
+
 #if canImport(PhotosUI)
-import PhotosUI
+  import PhotosUI
 #endif
 
 struct HelmHoldBar: View {
@@ -12,7 +13,10 @@ struct HelmHoldBar: View {
 
   var body: some View {
     let speak = speakBarLabel(model.speakPhase)
-    let title = holding ? holdLabel(model.hold) : (speak.isEmpty ? holdLabel(model.hold == .blocked ? .blocked : .idle) : speak)
+    let title =
+      holding
+      ? holdLabel(model.hold)
+      : (speak.isEmpty ? holdLabel(model.hold == .blocked ? .blocked : .idle) : speak)
     Text(title)
       .frame(maxWidth: .infinity)
       .padding(12)
@@ -49,7 +53,7 @@ struct HelmCompose: View {
   @State private var picking = false
   @State private var camera = false
   #if canImport(PhotosUI)
-  @State private var picked: PhotosPickerItem?
+    @State private var picked: PhotosPickerItem?
   #endif
 
   var body: some View {
@@ -90,71 +94,84 @@ struct HelmCompose: View {
           .padding(.vertical, 8)
           .background(Color(rgb: colors.panel))
       } else {
-      HStack(alignment: .bottom, spacing: 8) {
-        Menu {
-          Button("Photo") { picking = true }
-          Button("Camera") { camera = true }
-          Button("Commands") { model.compose = "/" }
-          Button("GPS this send") { model.setGps(!model.gpsOn) }
-          Button("Drop a pin") { model.sendPin() }
-        } label: {
-          Image(systemName: "paperclip")
-            .foregroundStyle(Color(rgb: colors.fg))
-            .frame(width: 36, height: 36)
-        }
-        .accessibilityLabel("Attach")
-        Button {
-          emojiOpen.toggle()
-        } label: {
-          Text("☺︎").font(.title3)
-        }
-        .accessibilityLabel("Emoji")
-        TextField("Message", text: $model.compose, axis: .vertical)
-          .lineLimit(1...6)
-          .textFieldStyle(.plain)
-          .padding(8)
-          .background(Color(rgb: colors.track))
-          .clipShape(RoundedRectangle(cornerRadius: 10))
-          .onChange(of: model.compose) { new in
-            let next = applyEmoji(new, cursor: (new as NSString).length, whenTo: "type")
-            if next.text != new {
-              model.compose = next.text
-            }
+        HStack(alignment: .bottom, spacing: 8) {
+          Menu {
+            Button("Photo") { picking = true }
+            Button("Camera") { camera = true }
+            Button("Commands") { model.compose = "/" }
+            Button("GPS this send") { model.setGps(!model.gpsOn) }
+            Button("Drop a pin") { model.sendPin() }
+          } label: {
+            Image(systemName: "paperclip")
+              .foregroundStyle(Color(rgb: colors.fg))
+              .frame(width: 36, height: 36)
           }
-        Button {
-          let next = applyEmoji(model.compose, cursor: (model.compose as NSString).length, whenTo: "send")
-          model.compose = next.text
-          model.sendText()
-        } label: {
-          Image(systemName: "arrow.up.circle.fill")
-            .font(.title)
-            .foregroundStyle(
-              composeHasTurn(text: model.compose, photo: model.stagedPhoto)
-                ? Color(rgb: colors.accent) : Color(rgb: colors.dim)
-            )
+          .accessibilityLabel("Attach")
+          Button {
+            emojiOpen.toggle()
+          } label: {
+            Text("☺︎").font(.title3)
+          }
+          .accessibilityLabel("Emoji")
+          TextField("Message", text: $model.compose, axis: .vertical)
+            .lineLimit(1...6)
+            .textFieldStyle(.plain)
+            .padding(8)
+            .background(Color(rgb: colors.track))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .onChange(of: model.compose) { new in
+              let next = applyEmoji(new, cursor: (new as NSString).length, whenTo: "type")
+              if next.text != new {
+                model.compose = next.text
+              }
+            }
+          Button {
+            let next = applyEmoji(
+              model.compose, cursor: (model.compose as NSString).length, whenTo: "send")
+            model.compose = next.text
+            model.sendText()
+          } label: {
+            Image(systemName: "arrow.up.circle.fill")
+              .font(.title)
+              .foregroundStyle(
+                composeHasTurn(text: model.compose, photo: model.stagedPhoto)
+                  ? Color(rgb: colors.accent) : Color(rgb: colors.dim)
+              )
+          }
+          .disabled(!composeHasTurn(text: model.compose, photo: model.stagedPhoto))
+          .accessibilityLabel("Send")
         }
-        .disabled(!composeHasTurn(text: model.compose, photo: model.stagedPhoto))
-        .accessibilityLabel("Send")
-      }
-      .padding(.horizontal, 12)
-      .padding(.vertical, 8)
-      .background(Color(rgb: colors.panel))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color(rgb: colors.panel))
       }
       if emojiOpen && !model.voiceBar {
         emojiPad(colors)
       }
     }
-    #if canImport(PhotosUI)
-    .photosPicker(isPresented: $picking, selection: $picked, matching: .images)
-    .onChange(of: picked) { item in
-      guard let item else { return }
-      Task {
-        if let data = try? await item.loadTransferable(type: Data.self) {
-          await MainActor.run { model.stagePhoto(data: data) }
-        }
-        await MainActor.run { picked = nil }
+    .onAppear {
+      if model.showEmoji {
+        emojiOpen = true
       }
     }
+    .confirmationDialog("Attach", isPresented: $model.showAttach, titleVisibility: .visible) {
+      Button("Photo") { picking = true }
+      Button("Camera") { camera = true }
+      Button("Commands") { model.compose = "/" }
+      Button("GPS this send") { model.setGps(!model.gpsOn) }
+      Button("Drop a pin") { model.sendPin() }
+    }
+    #if canImport(PhotosUI)
+      .photosPicker(isPresented: $picking, selection: $picked, matching: .images)
+      .onChange(of: picked) { item in
+        guard let item else { return }
+        Task {
+          if let data = try? await item.loadTransferable(type: Data.self) {
+            await MainActor.run { model.stagePhoto(data: data) }
+          }
+          await MainActor.run { picked = nil }
+        }
+      }
     #endif
     .sheet(isPresented: $camera) {
       HelmCamera { data in

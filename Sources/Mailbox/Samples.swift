@@ -97,7 +97,7 @@ public func sampleScene(_ id: String) -> SampleScene? {
       up: false,
       hint: "socket down — reconnecting",
       lines: [
-        sampleLine("d1", true, "On the dock — is the gate still open?", pending: true),
+        sampleLine("d1", true, "On the dock — is the gate still open?", pending: true)
       ]
     )
   case "stream":
@@ -135,7 +135,8 @@ public func sampleScene(_ id: String) -> SampleScene? {
       lines: [
         sampleLine("t1", true, "On the dock — is the gate still open?"),
         sampleLine(
-          "t2", false, "Gate's on the latch until 21:00. I'll ping you at 20:40 if you're still out."
+          "t2", false,
+          "Gate's on the latch until 21:00. I'll ping you at 20:40 if you're still out."
         ),
         sampleLine("t3", true, "Leave by 20:50 then."),
         sampleLine("t4", false, "Leave-by 20:50. Pin is this-send, ±12m."),

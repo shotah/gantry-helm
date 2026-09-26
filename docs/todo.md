@@ -87,8 +87,9 @@ Device `act` stays out until pendant routes `kind=helm`.
       messaging entitlement. Sideload product is the notification
       card (`INSendMessageIntent` + Reply). Head-unit detect is the
       car-audio route (`HelmCar`), not a tile.
-- [ ] **Replace hand-painted shots** once the UI settles. Cab’s
-      `DocsShot` lesson: do not maintain a second painter.
+- [x] **`make shot`.** Simulator captures of the phone rows in
+      `docs/screens.md`, written to `assets/docs/`. No second
+      painter. Car rows wait on the conversation screen.
 
 ## Watch — not a ticket
 

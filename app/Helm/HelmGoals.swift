@@ -1,5 +1,5 @@
-import SwiftUI
 import Mailbox
+import SwiftUI
 
 struct HelmGoals: View {
   @EnvironmentObject var model: HelmModel
@@ -68,9 +68,13 @@ struct HelmGoals: View {
       ForEach(Array(days.enumerated()), id: \.offset) { _, day in
         VStack(spacing: 2) {
           RoundedRectangle(cornerRadius: 3)
-            .fill(day.events.isEmpty ? Color.clear : Color(rgb: scoreHex(Double(day.score), colors: colors)))
+            .fill(
+              day.events.isEmpty
+                ? Color.clear : Color(rgb: scoreHex(Double(day.score), colors: colors))
+            )
             .overlay(
-              RoundedRectangle(cornerRadius: 3).stroke(Color(rgb: colors.line), lineWidth: day.events.isEmpty ? 1 : 0)
+              RoundedRectangle(cornerRadius: 3).stroke(
+                Color(rgb: colors.line), lineWidth: day.events.isEmpty ? 1 : 0)
             )
             .opacity(day.events.isEmpty ? 1 : dayWeight(day.score))
             .frame(width: 16, height: 16)

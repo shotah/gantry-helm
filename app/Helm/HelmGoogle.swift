@@ -1,19 +1,20 @@
 import Foundation
 import Mailbox
+
 #if canImport(GoogleSignIn)
-import GoogleSignIn
+  import GoogleSignIn
 #endif
 #if canImport(UIKit)
-import UIKit
+  import UIKit
 #endif
 
 enum HelmGoogle {
   @discardableResult
   static func handle(_ url: URL) -> Bool {
     #if canImport(GoogleSignIn)
-    GIDSignIn.sharedInstance.handle(url)
+      GIDSignIn.sharedInstance.handle(url)
     #else
-    false
+      false
     #endif
   }
 
@@ -23,44 +24,44 @@ enum HelmGoogle {
     completion: @escaping (Result<NativeSession, Error>) -> Void
   ) {
     #if canImport(GoogleSignIn) && canImport(UIKit)
-    let ios = HelmConfig.googleIosClientId.trimmingCharacters(in: .whitespacesAndNewlines)
-    if ios.isEmpty {
-      completion(.failure(GoogleNeedClient()))
-      return
-    }
-    guard let vc = helmPresenter() else {
-      completion(.failure(GoogleNeedPresenter()))
-      return
-    }
-    let nonce = fetchNonce(origin: origin)
-    GIDSignIn.sharedInstance.configuration = GIDConfiguration(
-      clientID: ios,
-      serverClientID: webClientId
-    )
-    DispatchQueue.main.async {
-      GIDSignIn.sharedInstance.signIn(
-        withPresenting: vc,
-        hint: nil,
-        additionalScopes: nil,
-        nonce: nonce
-      ) { result, error in
-        if let error {
-          completion(.failure(error))
-          return
-        }
-        guard let token = result?.user.idToken?.tokenString else {
-          completion(.failure(GoogleNeedPackage()))
-          return
-        }
-        do {
-          completion(.success(try exchange(origin: origin, idToken: token, nonce: nonce)))
-        } catch {
-          completion(.failure(error))
+      let ios = HelmConfig.googleIosClientId.trimmingCharacters(in: .whitespacesAndNewlines)
+      if ios.isEmpty {
+        completion(.failure(GoogleNeedClient()))
+        return
+      }
+      guard let vc = helmPresenter() else {
+        completion(.failure(GoogleNeedPresenter()))
+        return
+      }
+      let nonce = fetchNonce(origin: origin)
+      GIDSignIn.sharedInstance.configuration = GIDConfiguration(
+        clientID: ios,
+        serverClientID: webClientId
+      )
+      DispatchQueue.main.async {
+        GIDSignIn.sharedInstance.signIn(
+          withPresenting: vc,
+          hint: nil,
+          additionalScopes: nil,
+          nonce: nonce
+        ) { result, error in
+          if let error {
+            completion(.failure(error))
+            return
+          }
+          guard let token = result?.user.idToken?.tokenString else {
+            completion(.failure(GoogleNeedPackage()))
+            return
+          }
+          do {
+            completion(.success(try exchange(origin: origin, idToken: token, nonce: nonce)))
+          } catch {
+            completion(.failure(error))
+          }
         }
       }
-    }
     #else
-    completion(.failure(GoogleNeedPackage()))
+      completion(.failure(GoogleNeedPackage()))
     #endif
   }
 
@@ -80,15 +81,16 @@ enum HelmGoogle {
 }
 
 #if canImport(UIKit)
-func helmPresenter() -> UIViewController? {
-  let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-  let window = scenes.flatMap(\.windows).first { $0.isKeyWindow } ?? scenes.flatMap(\.windows).first
-  var vc = window?.rootViewController
-  while let shown = vc?.presentedViewController {
-    vc = shown
+  func helmPresenter() -> UIViewController? {
+    let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+    let window =
+      scenes.flatMap(\.windows).first { $0.isKeyWindow } ?? scenes.flatMap(\.windows).first
+    var vc = window?.rootViewController
+    while let shown = vc?.presentedViewController {
+      vc = shown
+    }
+    return vc
   }
-  return vc
-}
 #endif
 
 struct GoogleNeedPackage: Error, LocalizedError {
@@ -126,9 +128,11 @@ struct URLSessionTransport: HTTPTransport {
     let data = box?.0 ?? Data()
     let status = (box?.1 as? HTTPURLResponse)?.statusCode ?? 0
     var headers: [String: String] = [:]
-    (box?.1 as? HTTPURLResponse)?.allHeaderFields.forEach { k, v in
-      if let k = k as? String {
-        headers[k] = String(describing: v)
+    if let fields = (box?.1 as? HTTPURLResponse)?.allHeaderFields {
+      for (k, v) in fields {
+        if let k = k as? String {
+          headers[k] = String(describing: v)
+        }
       }
     }
     return HTTPResult(status: status, body: data, headers: headers)

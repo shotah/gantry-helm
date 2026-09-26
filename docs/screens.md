@@ -1,8 +1,11 @@
 # Screens
 
-What the mouth looks like. Reshoot when `make shot` exists. The
-SwiftUI shell is in `app/Helm` — same Ada/Kit copy, same Boom /
-Lamp / Paper as Cab.
+What the mouth looks like. `make shot` on a Mac with Xcode writes
+`assets/docs/<name>.png` from the Simulator (`-shot <name>`, DEBUG).
+`SHOT=phone-thread` shoots one. `SHOT_DRY=1` prints the list. This
+Deck has no Simulator, so it refuses a real capture. The SwiftUI
+shell is in `app/Helm` — same Ada/Kit copy, same Boom / Lamp /
+Paper as Cab.
 
 Boom is the default mood; Lamp and Paper are the other two README
 themes. The rest of the catalog lives in Settings (`Look.themeIds`).
@@ -39,6 +42,7 @@ Siri as a second mailbox.
 | `car-empty` | `empty` | CarPlay list, empty. |
 | `car-thread` | `thread` | CarPlay list, last six turns. |
 
-PNGs land in `assets/docs/` once the paint path exists. Cab's
-current shots are the look to match:
+Phone PNGs land in `assets/docs/` from `make shot`. Car rows stay
+off until a conversation screen exists. Cab's current shots are
+the look to match:
 [gantry-cab `docs/screens.md`](https://github.com/shotah/gantry-cab/blob/main/docs/screens.md).

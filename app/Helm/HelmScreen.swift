@@ -1,7 +1,8 @@
-import SwiftUI
 import Mailbox
+import SwiftUI
+
 #if canImport(UIKit)
-import UIKit
+  import UIKit
 #endif
 
 struct HelmRoot: View {
@@ -20,13 +21,17 @@ struct HelmRoot: View {
     .onChange(of: scenePhase) { phase in
       model.setResumed(phase == .active)
     }
-    .sheet(isPresented: $model.showGoals, onDismiss: {
-      model.markAimsSeen()
-    }) {
-      HelmGoals()
-        .environmentObject(model)
-        .onAppear { model.markAimsSeen() }
-    }
+    .sheet(
+      isPresented: $model.showGoals,
+      onDismiss: {
+        model.markAimsSeen()
+      },
+      content: {
+        HelmGoals()
+          .environmentObject(model)
+          .onAppear { model.markAimsSeen() }
+      }
+    )
   }
 }
 
@@ -104,7 +109,9 @@ struct HelmScreen: View {
         .zIndex(2)
     }
     .onAppear {
-      HelmNotify.setup()
+      if !model.sampleShown {
+        HelmNotify.setup()
+      }
       if !model.sampleShown && model.mouth.lines.isEmpty && !model.bearer.isEmpty {
         model.connect()
       }
@@ -148,9 +155,9 @@ struct KitFace: View {
 
 func helmImage(_ data: Data) -> Image? {
   #if canImport(UIKit)
-  if let ui = UIImage(data: data) {
-    return Image(uiImage: ui)
-  }
+    if let ui = UIImage(data: data) {
+      return Image(uiImage: ui)
+    }
   #endif
   return nil
 }
@@ -193,7 +200,8 @@ struct HelmChat: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         if let photo = line.photo, let data = decodeDataUrl(photo), let img = helmImage(data) {
-          img.resizable().scaledToFit().frame(maxWidth: 220).clipShape(RoundedRectangle(cornerRadius: 10))
+          img.resizable().scaledToFit().frame(maxWidth: 220).clipShape(
+            RoundedRectangle(cornerRadius: 10))
         }
         if let reaction = line.reaction, !reaction.isEmpty {
           Text(reaction).font(.caption)

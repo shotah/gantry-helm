@@ -122,7 +122,8 @@ private func isRule(_ line: String) -> Bool {
 }
 
 private func replaceImages(_ line: String) -> String {
-  line.replacingOccurrences(of: #"!\[[^\]]*\]\([^)]*\)"#, with: "photo", options: .regularExpression)
+  line.replacingOccurrences(
+    of: #"!\[[^\]]*\]\([^)]*\)"#, with: "photo", options: .regularExpression)
 }
 
 private func replaceLinks(_ line: String) -> String {

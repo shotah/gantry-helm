@@ -52,7 +52,9 @@ public func placeInThread<T: ThreadOrder>(_ messages: [T], _ bubble: T) -> [T] {
   return next.sorted { compareThread($0, $1) }
 }
 
-public func advanceCursor(_ current: ThreadCursor, id: String? = nil, seq: Int? = nil) -> ThreadCursor {
+public func advanceCursor(_ current: ThreadCursor, id: String? = nil, seq: Int? = nil)
+  -> ThreadCursor
+{
   if let seq, seq >= current.seq {
     return ThreadCursor(id: id ?? current.id, seq: seq)
   }
@@ -62,20 +64,16 @@ public func advanceCursor(_ current: ThreadCursor, id: String? = nil, seq: Int? 
   return current
 }
 
-/**
- Only queued turns advance `since`. An `ack` echoes our own id; an `error`
- names the frame the mailbox refused — neither is a place to resume from.
- */
+/// Only queued turns advance `since`. An `ack` echoes our own id; an `error`
+/// names the frame the mailbox refused — neither is a place to resume from.
 public func movesCursor(_ kind: String?) -> Bool {
   kind != "ack" && kind != "error" && kind != "face" && kind != "backdrop" && kind != "theme"
     && kind != "react" && kind != "aims"
 }
 
-/**
- Highest mailbox `seq` on a thread already on the device, for the first
- `ack` `since` of a fresh socket. Bubbles the mailbox never stamped (refused
- or still sending) do not count. Pendant `cursorOf`.
- */
+/// Highest mailbox `seq` on a thread already on the device, for the first
+/// `ack` `since` of a fresh socket. Bubbles the mailbox never stamped (refused
+/// or still sending) do not count. Pendant `cursorOf`.
 public func cursorOf(_ lines: [some ThreadOrder]) -> ThreadCursor {
   lines.reduce(ThreadCursor()) { cur, line in
     guard let seq = line.seq else {

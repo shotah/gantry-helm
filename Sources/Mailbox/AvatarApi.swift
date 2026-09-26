@@ -1,6 +1,7 @@
 import Foundation
+
 #if canImport(FoundationNetworking)
-import FoundationNetworking
+  import FoundationNetworking
 #endif
 
 public enum AvatarUpload: Equatable {
@@ -16,10 +17,8 @@ enum Fetched {
   case failed
 }
 
-/**
- Conditional GET for `/api/avatar` or `/api/backdrop`. A 304 or a failed
- request keeps the cached bytes; a 404 forgets them.
- */
+/// Conditional GET for `/api/avatar` or `/api/backdrop`. A 304 or a failed
+/// request keeps the cached bytes; a 404 forgets them.
 public final class AvatarApi {
   private let transport: HTTPTransport
   private let cache: BlobCache?
@@ -34,11 +33,9 @@ public final class AvatarApi {
     cache?.read(blobCacheKey(origin: origin, slug: slug, path: path))?.bytes
   }
 
-  /**
-   Current bytes, or nil when the room has none. Sends `If-None-Match`
-   for the rev on disk. Offline / 5xx / expired session keep the last
-   face; a 404 forgets it.
-   */
+  /// Current bytes, or nil when the room has none. Sends `If-None-Match`
+  /// for the rev on disk. Offline / 5xx / expired session keep the last
+  /// face; a 404 forgets it.
   public func fetch(
     origin: String,
     slug: String,
@@ -70,7 +67,8 @@ public final class AvatarApi {
         } else {
           got = .got(
             CachedBlob(
-              rev: blobRev(httpHeader(res.headers, "X-Pendant-Rev"), etag: httpHeader(res.headers, "ETag")),
+              rev: blobRev(
+                httpHeader(res.headers, "X-Pendant-Rev"), etag: httpHeader(res.headers, "ETag")),
               bytes: res.body
             )
           )
@@ -112,7 +110,8 @@ public final class AvatarApi {
     req.httpBody = multipartJpeg(jpeg, boundary: boundary)
     do {
       let res = try transport.perform(req)
-      return parseAvatarUpload(status: res.status, raw: String(data: res.body, encoding: .utf8) ?? "")
+      return parseAvatarUpload(
+        status: res.status, raw: String(data: res.body, encoding: .utf8) ?? "")
     } catch {
       return .err(error: "upload failed")
     }

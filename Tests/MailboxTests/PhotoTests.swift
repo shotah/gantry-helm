@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Mailbox
 
 final class PhotoTests: XCTestCase {
@@ -106,7 +107,10 @@ final class PhotoTests: XCTestCase {
     XCTAssertEqual([90, 80, 70, 60], tried.filter { $0.edge == 1600 }.map(\.quality))
     XCTAssertEqual([1600, 1200], uniqueInts(tried.map(\.edge)))
     XCTAssertEqual(1200, tried.last?.edge)
-    XCTAssertNil(shrinkToFit(shrinkSteps(edge: 1600, longest: 4000), maxBytes: 1_000) { _ in Data(count: 500_000) })
+    XCTAssertNil(
+      shrinkToFit(shrinkSteps(edge: 1600, longest: 4000), maxBytes: 1_000) { _ in
+        Data(count: 500_000)
+      })
     XCTAssertNil(shrinkToFit([], maxBytes: 10) { _ in Data(count: 1) })
   }
 
@@ -126,10 +130,10 @@ final class PhotoTests: XCTestCase {
   func testJpegFromImageDataKeepsASmallJpeg() {
     let jpeg = fakeJpeg()
     #if canImport(ImageIO)
-    XCTAssertNil(jpegFromImageData(Data([1, 2, 3]), edge: 1600, maxBytes: photoJpegBytesMax))
+      XCTAssertNil(jpegFromImageData(Data([1, 2, 3]), edge: 1600, maxBytes: photoJpegBytesMax))
     #else
-    XCTAssertEqual(jpeg, jpegFromImageData(jpeg, edge: 1600, maxBytes: photoJpegBytesMax))
-    XCTAssertNil(jpegFromImageData(Data([1, 2, 3]), edge: 1600, maxBytes: photoJpegBytesMax))
+      XCTAssertEqual(jpeg, jpegFromImageData(jpeg, edge: 1600, maxBytes: photoJpegBytesMax))
+      XCTAssertNil(jpegFromImageData(Data([1, 2, 3]), edge: 1600, maxBytes: photoJpegBytesMax))
     #endif
   }
 }

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Mailbox
 
 final class ThreadCacheTests: XCTestCase {
@@ -6,11 +7,16 @@ final class ThreadCacheTests: XCTestCase {
 
   private func thread() -> [ChatLine] {
     [
-      ChatLine(id: "a0", fromYou: true, text: "still sending", kind: "inbound", pending: true, at: 5),
+      ChatLine(
+        id: "a0", fromYou: true, text: "still sending", kind: "inbound", pending: true, at: 5),
       ChatLine(id: "a1", fromYou: true, text: "hatch?", kind: "inbound", at: 10, seq: 1),
       ChatLine(id: "k1", fromYou: false, text: "latched", kind: "reply", at: 20, seq: 2),
-      ChatLine(id: "p1", fromYou: false, text: "", kind: "push", photo: "data:image/jpeg;base64,aa", at: 30, seq: 3),
-      ChatLine(id: "a2", fromYou: true, text: "nope", kind: "inbound", at: 40, failed: "Not sent — too big for the room."),
+      ChatLine(
+        id: "p1", fromYou: false, text: "", kind: "push", photo: "data:image/jpeg;base64,aa",
+        at: 30, seq: 3),
+      ChatLine(
+        id: "a2", fromYou: true, text: "nope", kind: "inbound", at: 40,
+        failed: "Not sent — too big for the room."),
       ChatLine(id: draftId, fromYou: false, text: "Gate's on…", kind: "draft", at: 50),
     ]
   }
@@ -50,8 +56,10 @@ final class ThreadCacheTests: XCTestCase {
     let cache = ThreadCache(file: dir.appendingPathComponent("thread.json"))
     cache.write(room, lines: thread())
     XCTAssertEqual([], cache.read(ThreadRoom(origin: room.origin, slug: "ada", user: room.user)))
-    XCTAssertEqual([], cache.read(ThreadRoom(origin: "https://other.example", slug: room.slug, user: room.user)))
-    XCTAssertEqual([], cache.read(ThreadRoom(origin: room.origin, slug: room.slug, user: "bob@example.com")))
+    XCTAssertEqual(
+      [], cache.read(ThreadRoom(origin: "https://other.example", slug: room.slug, user: room.user)))
+    XCTAssertEqual(
+      [], cache.read(ThreadRoom(origin: room.origin, slug: room.slug, user: "bob@example.com")))
     XCTAssertEqual([], cache.read(ThreadRoom(origin: room.origin, slug: room.slug, user: "")))
     XCTAssertEqual(4, cache.read(room).count)
   }
@@ -65,7 +73,9 @@ final class ThreadCacheTests: XCTestCase {
     let raw =
       #"{"origin":"\#(room.origin)","slug":"kit","user":"\#(room.user)","lines":[{"text":"no id"},7,{"id":"ok","text":"hi"}]}"#
     try raw.write(to: file, atomically: true, encoding: .utf8)
-    XCTAssertEqual([ChatLine(id: "ok", fromYou: false, text: "hi", kind: nil)], ThreadCache(file: file).read(room))
+    XCTAssertEqual(
+      [ChatLine(id: "ok", fromYou: false, text: "hi", kind: nil)],
+      ThreadCache(file: file).read(room))
   }
 
   func testUnwritablePathIsQuiet() {
@@ -77,7 +87,11 @@ final class ThreadCacheTests: XCTestCase {
   }
 
   func testCapKeepsTheNewestLinesAndOneMaxPhotoFits() {
-    let big = (0..<6).map { ChatLine(id: "b\($0)", fromYou: false, text: String(repeating: "x", count: 100), kind: "reply", at: Int64($0)) }
+    let big = (0..<6).map {
+      ChatLine(
+        id: "b\($0)", fromYou: false, text: String(repeating: "x", count: 100), kind: "reply",
+        at: Int64($0))
+    }
     let raw = encodeThread(room, lines: big, maxChars: 400)
     XCTAssertEqual(["b4", "b5"], decodeThread(raw, room: room).map(\.id))
     XCTAssertEqual([], decodeThread(encodeThread(room, lines: big, maxChars: 1), room: room))
@@ -91,7 +105,8 @@ final class ThreadCacheTests: XCTestCase {
   func testOnlyWirePhotoShapesComeBack() {
     let lines = [
       ChatLine(id: "f", fromYou: true, text: "", kind: "inbound", photo: "file:///etc/passwd"),
-      ChatLine(id: "h", fromYou: true, text: "", kind: "inbound", photo: "https://img.example/a.jpg"),
+      ChatLine(
+        id: "h", fromYou: true, text: "", kind: "inbound", photo: "https://img.example/a.jpg"),
     ]
     let back = decodeThread(encodeThread(room, lines: lines), room: room)
     XCTAssertNil(back[0].photo)
@@ -99,11 +114,14 @@ final class ThreadCacheTests: XCTestCase {
   }
 
   func testDecodeCapsAtTheThreadMaxAndDropsNonPositiveSeq() {
-    let many = (0..<100).map { ChatLine(id: "m\($0)", fromYou: false, text: "n\($0)", kind: "reply", at: Int64($0)) }
+    let many = (0..<100).map {
+      ChatLine(id: "m\($0)", fromYou: false, text: "n\($0)", kind: "reply", at: Int64($0))
+    }
     let back = decodeThread(encodeThread(room, lines: many), room: room)
     XCTAssertEqual(80, back.count)
     XCTAssertEqual("m20", back.first?.id)
-    let raw = encodeThread(room, lines: [ChatLine(id: "z", fromYou: false, text: "z", kind: "reply", seq: 0)])
+    let raw = encodeThread(
+      room, lines: [ChatLine(id: "z", fromYou: false, text: "z", kind: "reply", seq: 0)])
     XCTAssertNil(decodeThread(raw, room: room)[0].seq)
   }
 

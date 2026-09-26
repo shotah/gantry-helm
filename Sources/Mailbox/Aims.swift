@@ -1,5 +1,5 @@
-import Foundation
 import CoreFoundation
+import Foundation
 
 /// Goals board (`kind: "aims"`). Crane only; the mailbox keeps the latest and
 /// replays it on connect. Whole board every time; empty `aims` clears. Not a turn.
@@ -266,7 +266,9 @@ private func parseWeeks(_ arr: [Any]?) -> [AimWeek] {
     if !aimDayOk(start) {
       continue
     }
-    guard let mean = jsonFinite(w["mean"]), let up = jsonInt(w["up"]), let against = jsonInt(w["against"]) else {
+    guard let mean = jsonFinite(w["mean"]), let up = jsonInt(w["up"]),
+      let against = jsonInt(w["against"])
+    else {
       continue
     }
     out.append(
@@ -298,7 +300,10 @@ private func parseMetrics(_ arr: [Any]?) -> [AimMetric] {
     guard let mean = jsonFinite(m["mean"]), let n = jsonInt(m["n"]) else {
       continue
     }
-    out.append(AimMetric(metric: metric, mean: mean, unit: jsonText(m, "unit").trimmingCharacters(in: .whitespaces), n: n))
+    out.append(
+      AimMetric(
+        metric: metric, mean: mean, unit: jsonText(m, "unit").trimmingCharacters(in: .whitespaces),
+        n: n))
   }
   return out
 }
@@ -308,7 +313,9 @@ private func parseBlock(_ o: [String: Any]?) -> AimBlock? {
   guard let o else {
     return nil
   }
-  guard let days = jsonInt(o["days"]), let up = jsonInt(o["up"]), let against = jsonInt(o["against"]) else {
+  guard let days = jsonInt(o["days"]), let up = jsonInt(o["up"]),
+    let against = jsonInt(o["against"])
+  else {
     return nil
   }
   guard let mean = jsonFinite(o["mean"]), let pct = jsonFinite(o["pct"]), days > 0 else {
@@ -499,7 +506,9 @@ public func encodeSeenAims(_ seen: [String: String]) -> String {
 }
 
 public func parseSeenAims(_ raw: String?) -> [String: String] {
-  guard let raw, !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, let o = JSON.object(raw) else {
+  guard let raw, !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+    let o = JSON.object(raw)
+  else {
     return [:]
   }
   var out: [String: String] = [:]
@@ -513,7 +522,8 @@ public func parseSeenAims(_ raw: String?) -> [String: String] {
 
 func aimRow(_ aim: Aim) -> String {
   let days = aim.days.map { "\($0.day):\($0.score):\($0.events.count)" }.joined(separator: ",")
-  let weeks = aim.weeks.map { "\($0.start):\($0.mean):\($0.up):\($0.against)" }.joined(separator: ",")
+  let weeks = aim.weeks.map { "\($0.start):\($0.mean):\($0.up):\($0.against)" }.joined(
+    separator: ",")
   let slope = aim.slope.map { String($0) } ?? ""
   let block = aim.block.map { "\($0.days):\($0.up):\($0.against):\($0.mean):\($0.pct)" } ?? ""
   let effect = aim.effect.map { "\($0.metric):\($0.r):\($0.n)" } ?? ""

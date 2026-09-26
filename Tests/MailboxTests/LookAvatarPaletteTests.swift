@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Mailbox
 
 final class LookAvatarPaletteTests: XCTestCase {
@@ -128,9 +129,12 @@ final class LookAvatarPaletteTests: XCTestCase {
   }
 
   func testRoomThemeNoticeClearsOnNullAndIgnoresJunk() {
-    XCTAssertEqual("lamp", roomThemeNotice("theme", themePresent: true, themeNull: false, themeRaw: "lamp"))
-    XCTAssertEqual("", roomThemeNotice("theme", themePresent: true, themeNull: true, themeRaw: "lamp"))
-    XCTAssertEqual("", roomThemeNotice("theme", themePresent: false, themeNull: false, themeRaw: nil))
+    XCTAssertEqual(
+      "lamp", roomThemeNotice("theme", themePresent: true, themeNull: false, themeRaw: "lamp"))
+    XCTAssertEqual(
+      "", roomThemeNotice("theme", themePresent: true, themeNull: true, themeRaw: "lamp"))
+    XCTAssertEqual(
+      "", roomThemeNotice("theme", themePresent: false, themeNull: false, themeRaw: nil))
     XCTAssertNil(roomThemeNotice("theme", themePresent: true, themeNull: false, themeRaw: "nope"))
     XCTAssertNil(roomThemeNotice("face", themePresent: true, themeNull: false, themeRaw: "lamp"))
   }

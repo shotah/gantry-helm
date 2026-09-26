@@ -1,8 +1,10 @@
 import XCTest
-#if canImport(FoundationNetworking)
-import FoundationNetworking
-#endif
+
 @testable import Mailbox
+
+#if canImport(FoundationNetworking)
+  import FoundationNetworking
+#endif
 
 final class MockHTTP: HTTPTransport {
   var queue: [HTTPResult] = []
@@ -34,8 +36,9 @@ final class AuthThemeJpegTests: XCTestCase {
     http.queue = [
       HTTPResult(
         status: 200,
-        body: Data(#"{"sub":"u1","email":"ada@example.com","cranes":["kit","", "dock","Nope!"]}"#.utf8)
-      ),
+        body: Data(
+          #"{"sub":"u1","email":"ada@example.com","cranes":["kit","", "dock","Nope!"]}"#.utf8)
+      )
     ]
     let api = AuthApi(transport: http)
     let got = try api.me(origin: "http://mailbox.test/", token: "jwe")
@@ -48,7 +51,9 @@ final class AuthThemeJpegTests: XCTestCase {
   func testConfigIgnoresAdditiveKeys() throws {
     let http = MockHTTP()
     http.queue = [
-      HTTPResult(status: 200, body: Data(#"{"mode":"google","google":true,"version":"0.4.0","dev":true}"#.utf8)),
+      HTTPResult(
+        status: 200,
+        body: Data(#"{"mode":"google","google":true,"version":"0.4.0","dev":true}"#.utf8))
     ]
     let api = AuthApi(transport: http)
     let got = try api.config(origin: "http://mailbox.test/")
@@ -98,9 +103,12 @@ final class AuthThemeJpegTests: XCTestCase {
   func testTokenPostsIdToken() throws {
     let http = MockHTTP()
     http.queue = [
-      HTTPResult(status: 200, body: Data(#"{"token":"jwe","sub":"u1","email":"ada@example.com","exp":9}"#.utf8)),
+      HTTPResult(
+        status: 200,
+        body: Data(#"{"token":"jwe","sub":"u1","email":"ada@example.com","exp":9}"#.utf8))
     ]
-    let got = try AuthApi(transport: http).token(origin: "http://mailbox.test/", idToken: "id", nonce: "nonce")
+    let got = try AuthApi(transport: http).token(
+      origin: "http://mailbox.test/", idToken: "id", nonce: "nonce")
     XCTAssertEqual("jwe", got.token)
     XCTAssertEqual("u1", got.sub)
     XCTAssertEqual(9, got.exp)
@@ -142,7 +150,9 @@ final class AuthThemeJpegTests: XCTestCase {
   func testFetchReturnsTheRoomIdAndSendsBearer() {
     let http = MockHTTP()
     http.queue = [HTTPResult(status: 200, body: Data(#"{"theme":"noir","themes":[]}"#.utf8))]
-    XCTAssertEqual("noir", ThemeApi(transport: http).fetch(origin: "http://mailbox.test/", slug: "kit", bearer: "jwe"))
+    XCTAssertEqual(
+      "noir",
+      ThemeApi(transport: http).fetch(origin: "http://mailbox.test/", slug: "kit", bearer: "jwe"))
     XCTAssertEqual("/api/theme", http.requests[0].url?.path)
     XCTAssertEqual("slug=kit", http.requests[0].url?.query)
     XCTAssertEqual("Bearer jwe", http.requests[0].value(forHTTPHeaderField: "Authorization"))
@@ -151,14 +161,16 @@ final class AuthThemeJpegTests: XCTestCase {
   func testFetchMissOrJunkIsClearedNotANetworkFail() {
     let http = MockHTTP()
     http.queue = [HTTPResult(status: 200, body: Data(#"{"theme":null}"#.utf8))]
-    XCTAssertEqual("", ThemeApi(transport: http).fetch(origin: "http://mailbox.test/", slug: "kit", bearer: ""))
+    XCTAssertEqual(
+      "", ThemeApi(transport: http).fetch(origin: "http://mailbox.test/", slug: "kit", bearer: ""))
     XCTAssertNil(http.requests[0].value(forHTTPHeaderField: "Authorization"))
   }
 
   func testFetchHttpErrorIsNilSoALiveNoticeIsKept() {
     let http = MockHTTP()
     http.queue = [HTTPResult(status: 503, body: Data())]
-    XCTAssertNil(ThemeApi(transport: http).fetch(origin: "http://mailbox.test/", slug: "kit", bearer: "jwe"))
+    XCTAssertNil(
+      ThemeApi(transport: http).fetch(origin: "http://mailbox.test/", slug: "kit", bearer: "jwe"))
   }
 
   func testRejectsTinyHugeAndNonJpeg() {
@@ -181,7 +193,8 @@ final class AuthThemeJpegTests: XCTestCase {
     XCTAssertFalse(shouldPassthroughJpeg(type: "image/png", size: 100, width: 64, height: 64))
     XCTAssertFalse(shouldPassthroughJpeg(type: "image/jpeg", size: 100, width: 2000, height: 64))
     XCTAssertFalse(
-      shouldPassthroughJpeg(type: "image/jpeg", size: 2_000_000, width: 64, height: 64, maxBytes: 1_500_000)
+      shouldPassthroughJpeg(
+        type: "image/jpeg", size: 2_000_000, width: 64, height: 64, maxBytes: 1_500_000)
     )
   }
 }

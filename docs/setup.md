@@ -6,6 +6,8 @@ app is another phone. CarPlay is a communication notification.
 ## Build
 
 ```bash
+make lint            # Apple swift-format
+make format          # rewrite Swift to match
 make test            # no Swift: make test-scripts
 make coverage        # llvm-cov + 70% bar
 make check-app       # test + coverage

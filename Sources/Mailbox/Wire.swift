@@ -1,5 +1,5 @@
-import Foundation
 import CoreFoundation
+import Foundation
 
 public struct Geo: Equatable {
   public var lat: Double

@@ -302,7 +302,8 @@ private let defaultPick = [
 ]
 
 public func searchEmoji(_ query: String) -> [EmojiEntry] {
-  let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased().replacingOccurrences(of: ":", with: "")
+  let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased().replacingOccurrences(
+    of: ":", with: "")
   if q.isEmpty {
     return defaultPick.compactMap { name in emojiCatalog.first { $0.name == name } }
   }
@@ -324,7 +325,8 @@ private struct Emoticon {
   var hold: Bool
 }
 
-private let shortcodeRe = try! NSRegularExpression(pattern: ":[a-z0-9_+-]{1,32}:", options: [.caseInsensitive])
+private let shortcodeRe = try! NSRegularExpression(
+  pattern: ":[a-z0-9_+-]{1,32}:", options: [.caseInsensitive])
 
 private let emoticons: [Emoticon] = [
   Emoticon(token: ":'(", emoji: "😢", hold: false),
@@ -401,7 +403,9 @@ private func shortcodeSpans(_ text: String) -> [Span] {
     guard let emoji = emojiForShortcode(name) else {
       continue
     }
-    spans.append(Span(start: match.range.location, end: match.range.location + match.range.length, value: emoji))
+    spans.append(
+      Span(
+        start: match.range.location, end: match.range.location + match.range.length, value: emoji))
   }
   return spans
 }

@@ -103,6 +103,8 @@ Xcode on a Mac opens `app/Helm.xcodeproj` (local Swift package
 [gantry-cab](https://github.com/shotah/gantry-cab):
 
 ```bash
+make lint            # Apple swift-format (Docker swift:6.3.3)
+make format          # rewrite Swift to match .swift-format
 make test            # script tests + Mailbox swift test
 make coverage        # llvm-cov + 70% bar (Mailbox)
 make check-app       # test + coverage

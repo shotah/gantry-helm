@@ -8,7 +8,7 @@ let package = Package(
     .macOS(.v13),
   ],
   products: [
-    .library(name: "Mailbox", targets: ["Mailbox"]),
+    .library(name: "Mailbox", targets: ["Mailbox"])
   ],
   targets: [
     .target(name: "Mailbox"),

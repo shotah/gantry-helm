@@ -35,10 +35,8 @@ public func backdropRev(_ kind: String?, _ raw: Any?) -> Int? {
   return Int(n)
 }
 
-/**
- Known id, empty string when cleared, null when this is not a theme notice (or junk).
- Mirrors pendant `themeIdFromUnknown`.
- */
+/// Known id, empty string when cleared, null when this is not a theme notice (or junk).
+/// Mirrors pendant `themeIdFromUnknown`.
 public func roomThemeNotice(
   _ kind: String?,
   themePresent: Bool,

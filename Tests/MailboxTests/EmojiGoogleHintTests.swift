@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Mailbox
 
 final class EmojiGoogleHintTests: XCTestCase {
@@ -14,8 +15,10 @@ final class EmojiGoogleHintTests: XCTestCase {
     let next = applyEmoji("well :shrug: ok", cursor: 13, whenTo: "type")
     XCTAssertEqual("well 🤷 ok", next.text)
     XCTAssertEqual(8, next.cursor)
-    XCTAssertEqual("see :notacode: later", applyEmoji("see :notacode: later", cursor: 18, whenTo: "type").text)
-    XCTAssertEqual("https://example.com", applyEmoji("https://example.com", cursor: 19, whenTo: "type").text)
+    XCTAssertEqual(
+      "see :notacode: later", applyEmoji("see :notacode: later", cursor: 18, whenTo: "type").text)
+    XCTAssertEqual(
+      "https://example.com", applyEmoji("https://example.com", cursor: 19, whenTo: "type").text)
   }
 
   func testGrinConvertsWhenFinishedAndOnSend() {
@@ -73,7 +76,8 @@ final class EmojiGoogleHintTests: XCTestCase {
     XCTAssertTrue(none.contains("com.gantree.helm"))
     let console = googleSignInHint(
       className: "Exception",
-      message: "During begin sign in, failure response from one tap: 16: [28444] Developer console is not set up correctly"
+      message:
+        "During begin sign in, failure response from one tap: 16: [28444] Developer console is not set up correctly"
     )
     XCTAssertTrue(console.contains("iOS OAuth"))
     XCTAssertTrue(console.contains("28444"))

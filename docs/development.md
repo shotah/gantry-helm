@@ -4,8 +4,11 @@ How this repo is tested on a Linux host (Steam Deck) that has **no
 Swift toolchain**. Nora’s Mac uses the same Make targets with a
 native `swift`. CI is `.github/workflows/ci.yml`.
 
-There is no SwiftLint / `make lint`. Typecheck is `swift test`
-compiling. Script tests are bash. Mailbox tests are XCTest under
+`make lint` is Apple `swift-format` 6.3.3 (`swift format lint
+--strict`), rules in `.swift-format` (that tool’s defaults: 2-space
+indent, 100 columns, `#if` bodies indented). `make format` rewrites
+sources to match. Typecheck is `swift test` compiling. Script tests
+are bash. Mailbox tests are XCTest under
 `Tests/MailboxTests/`, mirroring `Sources/Mailbox/`. Do not colocate
 `*.test.swift` next to sources.
 
@@ -16,7 +19,8 @@ add a Vitest-shaped XCTest and call the function.
 
 | Layer | Where | Command |
 | --- | --- | --- |
-| Script tests (semver, badge, release, hooks, bake) | Host bash + Node | `make test-scripts` |
+| Script tests (semver, badge, release, hooks, bake, format) | Host bash + Node | `make test-scripts` |
+| Swift format | Docker `swift:6.3.3` | `make lint` / `make format` |
 | Mailbox unit tests | Docker `swift:6.3.3` (or host `swift`) | `swift test` |
 | Coverage + 70% bar | Same Swift as the tests, then host Node for the gate | see below |
 | Unsigned Simulator `.app` | macOS / Actions `macos-latest` only | `make ios` |
@@ -59,8 +63,8 @@ them (may need `sudo` on the Deck). Override the image with
 
 ## Coverage (the CI `check` job)
 
-CI: `setup-node@v7` (Node 24) → `make test-scripts` → `make
-coverage`. Export runs **inside** the Swift image so `llvm-cov` is
+CI: `setup-node@v7` (Node 24) → `make test-scripts` → `make lint`
+→ `make coverage`. Export runs **inside** the Swift image so `llvm-cov` is
 on PATH (hosted `setup-swift` often has `swift` and not `llvm-cov`).
 The 70% gate is host Node.
 
@@ -93,7 +97,9 @@ Other Linux-only edges already covered by tests:
 
 ## What this machine cannot verify
 
-- `make ios` / a clickable UI / Google Sign-In / keychain / camera.
+- `make shot` / `make ios` / a clickable UI / Google Sign-In / keychain / camera.
+  `SHOT_DRY=1 ./scripts/helm-shot.sh` prints the phone shot list here.
+  A Mac with Xcode runs `make shot` and writes `assets/docs/*.png`.
 - A signed IPA. GitHub Release notes only; no APK-style sideload
   artifact. See [setup.md](setup.md).
 - Live pendant. Spike and Google walks are Nora + a Worker.

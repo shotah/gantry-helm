@@ -1,6 +1,7 @@
 import Foundation
+
 #if canImport(FoundationNetworking)
-import FoundationNetworking
+  import FoundationNetworking
 #endif
 
 public enum TtsResult: Equatable {
@@ -19,7 +20,9 @@ public final class TtsApi {
     self.transport = transport
   }
 
-  public func synthesize(origin: String, bearer: String, text: String, lang: String = defaultLang) -> TtsResult {
+  public func synthesize(origin: String, bearer: String, text: String, lang: String = defaultLang)
+    -> TtsResult
+  {
     let payload = JSON.stringify(["text": text, "lang": parseLang(lang)])
     var req = URLRequest(url: URL(string: ttsUrl(origin))!)
     req.httpMethod = "POST"

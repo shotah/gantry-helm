@@ -1,6 +1,8 @@
 import Foundation
 
-public func googleSignInHint(className: String, message: String?, causeLines: [String] = []) -> String {
+public func googleSignInHint(className: String, message: String?, causeLines: [String] = [])
+  -> String
+{
   let msg = message?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
   let summary: String
   if msg.contains("28444") || msg.lowercased().contains("developer console") {
@@ -9,7 +11,8 @@ public func googleSignInHint(className: String, message: String?, causeLines: [S
   } else if className.lowercased().contains("cancel") {
     summary =
       "Google closed the sheet after the account. That is often a URL-scheme / client-id mismatch, not you hitting Cancel."
-  } else if className.lowercased().contains("nocredential") || msg.lowercased().contains("keychain") {
+  } else if className.lowercased().contains("nocredential") || msg.lowercased().contains("keychain")
+  {
     summary =
       "No Google account, or this app’s bundle isn’t an iOS OAuth client for com.gantree.helm."
   } else if !msg.isEmpty {
@@ -23,7 +26,9 @@ public func googleSignInHint(className: String, message: String?, causeLines: [S
     trail.append(msg)
   }
   trail.append(
-    contentsOf: causeLines.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+    contentsOf: causeLines.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter {
+      !$0.isEmpty
+    }
   )
   var seen = Set<String>()
   let unique = trail.filter { seen.insert($0).inserted }

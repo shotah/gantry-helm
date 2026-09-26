@@ -1,10 +1,11 @@
-import SwiftUI
 import Mailbox
+import SwiftUI
+
 #if canImport(PhotosUI)
-import PhotosUI
+  import PhotosUI
 #endif
 #if canImport(UIKit)
-import UIKit
+  import UIKit
 #endif
 
 struct HelmCamera: UIViewControllerRepresentable {
@@ -16,7 +17,8 @@ struct HelmCamera: UIViewControllerRepresentable {
 
   func makeUIViewController(context: Context) -> UIImagePickerController {
     let picker = UIImagePickerController()
-    picker.sourceType = UIImagePickerController.isSourceTypeAvailable(.camera) ? .camera : .photoLibrary
+    picker.sourceType =
+      UIImagePickerController.isSourceTypeAvailable(.camera) ? .camera : .photoLibrary
     picker.delegate = context.coordinator
     picker.allowsEditing = false
     return picker
@@ -24,7 +26,8 @@ struct HelmCamera: UIViewControllerRepresentable {
 
   func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
 
-  final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+  final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate
+  {
     let onPick: (Data?) -> Void
 
     init(onPick: @escaping (Data?) -> Void) {

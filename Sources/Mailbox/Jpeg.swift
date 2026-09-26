@@ -41,18 +41,16 @@ public func shouldPassthroughJpeg(
   return type == "image/jpeg" && scale == 1.0 && size <= maxBytes
 }
 
-/**
- Read bytes as a JPEG no larger than `maxBytes`. Passthrough when already
- a JPEG under the edge; else ImageIO walks `shrinkSteps`. Linux without
- ImageIO only passthroughs an accepted JPEG that already fits.
- */
+/// Read bytes as a JPEG no larger than `maxBytes`. Passthrough when already
+/// a JPEG under the edge; else ImageIO walks `shrinkSteps`. Linux without
+/// ImageIO only passthroughs an accepted JPEG that already fits.
 public func jpegFromImageData(_ data: Data, edge: Int, maxBytes: Int) -> Data? {
   #if canImport(ImageIO)
-  return jpegFromImageDataIO(data, edge: edge, maxBytes: maxBytes)
+    return jpegFromImageDataIO(data, edge: edge, maxBytes: maxBytes)
   #else
-  if data.count <= maxBytes, acceptJpeg(data).ok {
-    return data
-  }
-  return nil
+    if data.count <= maxBytes, acceptJpeg(data).ok {
+      return data
+    }
+    return nil
   #endif
 }

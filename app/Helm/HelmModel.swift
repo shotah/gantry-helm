@@ -4,10 +4,10 @@ import Mailbox
 import UserNotifications
 
 #if canImport(Network)
-import Network
+  import Network
 #endif
 #if canImport(UIKit)
-import UIKit
+  import UIKit
 #endif
 
 @MainActor
@@ -41,6 +41,8 @@ final class HelmModel: ObservableObject {
   @Published var compose = ""
   @Published var stagedPhoto: String?
   @Published var showSettings = false
+  @Published var showEmoji = false
+  @Published var showAttach = false
   @Published var authHint = ""
   @Published var signingIn = false
   @Published var resumed = true
@@ -81,7 +83,7 @@ final class HelmModel: ObservableObject {
     )
   }
 
-  init(sample: String? = nil) {
+  init(sample: String? = nil, theme: String? = nil, open: String? = nil) {
     origin = prefs.origin
     slug = prefs.slug
     spike = prefs.spike
@@ -112,12 +114,13 @@ final class HelmModel: ObservableObject {
     }
     if HelmConfig.debug, let id = parseSample(sample) {
       applySample(id)
+      applyShotChrome(theme: theme, open: open)
     } else {
       hydrateDisk()
       publish()
       refreshLook()
     }
-    if gpsOn {
+    if gpsOn && !sampleShown {
       location.setEnabled(true)
     }
     HelmCar.start { [weak self] attached in
@@ -127,7 +130,9 @@ final class HelmModel: ObservableObject {
     }
     net.start()
     bindVoice()
-    refreshVoice()
+    if !sampleShown {
+      refreshVoice()
+    }
     startSweep()
   }
 
@@ -189,7 +194,33 @@ final class HelmModel: ObservableObject {
     _ = socket?.sweep()
   }
 
+  func applyShotChrome(theme: String?, open: String?) {
+    guard sampleShown else {
+      return
+    }
+    if let theme, !theme.isEmpty {
+      themeId = parseTheme(theme)
+      followTheme = false
+    }
+    switch open {
+    case "settings":
+      showSettings = true
+    case "emoji":
+      showEmoji = true
+    case "attach":
+      showAttach = true
+    case "draft":
+      stagedPhoto = samplePhotoUrl
+    default:
+      break
+    }
+    publish()
+  }
+
   func persistFields() {
+    if sampleShown {
+      return
+    }
     prefs.origin = origin
     prefs.slug = slug
     prefs.theme = themeId
@@ -382,7 +413,8 @@ final class HelmModel: ObservableObject {
     }
     if painted && shouldSpeak(frame.kind, replay: frame.replay)
       && watchingThread(phoneResumed: resumed, carThreadVisible: carThreadVisible),
-      let id = frame.id {
+      let id = frame.id
+    {
       _ = socket?.send(ackSeen(id))
     }
     if let body = kitNoticeBody(
@@ -494,17 +526,17 @@ final class HelmModel: ObservableObject {
 
   func peekBattery() -> BatteryHint? {
     #if canImport(UIKit)
-    let device = UIDevice.current
-    let wasOn = device.isBatteryMonitoringEnabled
-    device.isBatteryMonitoringEnabled = true
-    let level = device.batteryLevel
-    let charging = device.batteryState == .charging || device.batteryState == .full
-    if !wasOn {
-      device.isBatteryMonitoringEnabled = false
-    }
-    return batteryHintFromLevel(level, charging: charging)
+      let device = UIDevice.current
+      let wasOn = device.isBatteryMonitoringEnabled
+      device.isBatteryMonitoringEnabled = true
+      let level = device.batteryLevel
+      let charging = device.batteryState == .charging || device.batteryState == .full
+      if !wasOn {
+        device.isBatteryMonitoringEnabled = false
+      }
+      return batteryHintFromLevel(level, charging: charging)
     #else
-    return nil
+      return nil
     #endif
   }
 
@@ -534,8 +566,10 @@ final class HelmModel: ObservableObject {
     let wantBack = backdropOn
     DispatchQueue.global(qos: .userInitiated).async {
       let face = api?.fetch(origin: origin, slug: slug, bearer: bearer, rev: faceRev)
-      let back = wantBack
-        ? api?.fetch(origin: origin, slug: slug, bearer: bearer, rev: backRev, path: "/api/backdrop")
+      let back =
+        wantBack
+        ? api?.fetch(
+          origin: origin, slug: slug, bearer: bearer, rev: backRev, path: "/api/backdrop")
         : nil
       DispatchQueue.main.async {
         self.faceJpeg = face
@@ -619,7 +653,9 @@ final class HelmModel: ObservableObject {
       return
     }
     DispatchQueue.global(qos: .utility).async {
-      guard let offered = try? AuthApi(transport: URLSessionTransport()).config(origin: origin).voice else {
+      guard
+        let offered = try? AuthApi(transport: URLSessionTransport()).config(origin: origin).voice
+      else {
         return
       }
       DispatchQueue.main.async {
@@ -633,24 +669,24 @@ final class HelmModel: ObservableObject {
 /// Cached `NWPathMonitor` so send can peek without waiting.
 final class HelmNet {
   #if canImport(Network)
-  private let monitor = NWPathMonitor()
-  private let queue = DispatchQueue(label: "com.gantree.helm.net")
+    private let monitor = NWPathMonitor()
+    private let queue = DispatchQueue(label: "com.gantree.helm.net")
   #endif
   private let lock = NSLock()
   private var lastHint = "unknown"
 
   func start() {
     #if canImport(Network)
-    monitor.pathUpdateHandler = { [weak self] path in
-      let hint = netHint(
-        wifi: path.usesInterfaceType(.wifi),
-        cellular: path.usesInterfaceType(.cellular)
-      )
-      self?.lock.lock()
-      self?.lastHint = hint
-      self?.lock.unlock()
-    }
-    monitor.start(queue: queue)
+      monitor.pathUpdateHandler = { [weak self] path in
+        let hint = netHint(
+          wifi: path.usesInterfaceType(.wifi),
+          cellular: path.usesInterfaceType(.cellular)
+        )
+        self?.lock.lock()
+        self?.lastHint = hint
+        self?.lock.unlock()
+      }
+      monitor.start(queue: queue)
     #endif
   }
 
@@ -664,9 +700,9 @@ final class HelmNet {
 enum HelmConfig {
   static var debug: Bool {
     #if DEBUG
-    true
+      true
     #else
-    false
+      false
     #endif
   }
 
@@ -676,9 +712,9 @@ enum HelmConfig {
       return baked
     }
     #if DEBUG
-    return "http://127.0.0.1:3000"
+      return "http://127.0.0.1:3000"
     #else
-    return ""
+      return ""
     #endif
   }
 

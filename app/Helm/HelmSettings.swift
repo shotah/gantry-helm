@@ -1,7 +1,8 @@
-import SwiftUI
 import Mailbox
+import SwiftUI
+
 #if canImport(UIKit)
-import UIKit
+  import UIKit
 #endif
 
 struct HelmSettings: View {
@@ -30,9 +31,11 @@ struct HelmSettings: View {
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
         }
-        Text("The pendant Worker host — same site as the PWA. Cloudflare URL, or Gantree’s PENDANT_MAILBOX_URL without /ws/kit.")
-          .font(.caption)
-          .foregroundStyle(Color(rgb: colors.dim))
+        Text(
+          "The pendant Worker host — same site as the PWA. Cloudflare URL, or Gantree’s PENDANT_MAILBOX_URL without /ws/kit."
+        )
+        .font(.caption)
+        .foregroundStyle(Color(rgb: colors.dim))
         labeled("Talking to") {
           TextField("kit", text: $model.slug)
             .textInputAutocapitalization(.never)
@@ -68,9 +71,11 @@ struct HelmSettings: View {
             )
         }
         if !model.googleReady {
-          Text("This build has no Google Sign-In. Use a phone secret, or rebuild with HELM_GOOGLE_WEB_CLIENT_ID.")
-            .font(.caption)
-            .foregroundStyle(Color(rgb: colors.dim))
+          Text(
+            "This build has no Google Sign-In. Use a phone secret, or rebuild with HELM_GOOGLE_WEB_CLIENT_ID."
+          )
+          .font(.caption)
+          .foregroundStyle(Color(rgb: colors.dim))
         }
         labeled("Phone secret") {
           SecureField("MAILBOX_SECRET", text: $model.spike)
@@ -124,28 +129,36 @@ struct HelmSettings: View {
         Text("Smaller sends faster and costs fewer tokens to look at.")
           .font(.caption)
           .foregroundStyle(Color(rgb: colors.dim))
-        Toggle(isOn: Binding(
-          get: { model.gpsOn },
-          set: { model.setGps($0) }
-        )) {
+        Toggle(
+          isOn: Binding(
+            get: { model.gpsOn },
+            set: { model.setGps($0) }
+          )
+        ) {
           Text("GPS this send")
         }
         Text(model.gpsOn ? geoHint(enabled: true, geo: model.prefs.lastGeo) : "GPS off")
           .font(.caption)
           .foregroundStyle(Color(rgb: colors.dim))
         Toggle("Follow Kit's mood", isOn: $model.followTheme)
-        Text("When on, \(displaySlug(model.slug)) picks the color theme. Off keeps the one you pick.")
-          .font(.caption)
-          .foregroundStyle(Color(rgb: colors.dim))
-        Toggle(isOn: Binding(
-          get: { model.backdropOn },
-          set: { model.setBackdrop($0) }
-        )) {
+        Text(
+          "When on, \(displaySlug(model.slug)) picks the color theme. Off keeps the one you pick."
+        )
+        .font(.caption)
+        .foregroundStyle(Color(rgb: colors.dim))
+        Toggle(
+          isOn: Binding(
+            get: { model.backdropOn },
+            set: { model.setBackdrop($0) }
+          )
+        ) {
           Text("Backdrop")
         }
-        Text("\(displaySlug(model.slug)) can paint a wallpaper behind the thread. Off keeps the theme.")
-          .font(.caption)
-          .foregroundStyle(Color(rgb: colors.dim))
+        Text(
+          "\(displaySlug(model.slug)) can paint a wallpaper behind the thread. Off keeps the theme."
+        )
+        .font(.caption)
+        .foregroundStyle(Color(rgb: colors.dim))
         Text("CarPlay").font(.caption).foregroundStyle(Color(rgb: colors.muted))
         Text(
           "Helm has no tile in the car from a sideload. Kit arrives as a communication notification that CarPlay reads aloud; tap the card to reply by voice. Open Helm and send a line before you drive, then lock the phone. Plug in, then tap Test to hear a check message."
@@ -155,23 +168,23 @@ struct HelmSettings: View {
         Button("Test car voice") { model.carTest() }
           .accessibilityLabel("test car voice")
         #if DEBUG
-        if HelmConfig.debug {
-          Text("Samples").font(.caption).foregroundStyle(Color(rgb: colors.muted))
-          ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-              ForEach(sampleIds, id: \.self) { id in
-                chip(id, on: false) {
-                  model.applySample(id)
-                  model.showSettings = false
+          if HelmConfig.debug {
+            Text("Samples").font(.caption).foregroundStyle(Color(rgb: colors.muted))
+            ScrollView(.horizontal, showsIndicators: false) {
+              HStack {
+                ForEach(sampleIds, id: \.self) { id in
+                  chip(id, on: false) {
+                    model.applySample(id)
+                    model.showSettings = false
+                  }
                 }
               }
             }
+            .accessibilityLabel("debug samples")
+            Text("DEBUG only. Does not persist or connect.")
+              .font(.caption)
+              .foregroundStyle(Color(rgb: colors.dim))
           }
-          .accessibilityLabel("debug samples")
-          Text("DEBUG only. Does not persist or connect.")
-            .font(.caption)
-            .foregroundStyle(Color(rgb: colors.dim))
-        }
         #endif
         HStack {
           Button("Connect") { model.connect() }
@@ -192,8 +205,8 @@ struct HelmSettings: View {
             .accessibilityLabel("google sub")
           Button(copied ? "Copied" : "Copy") {
             #if canImport(UIKit)
-            UIPasteboard.general.string = allowlistCopy(email: model.email, sub: model.sub)
-            copied = true
+              UIPasteboard.general.string = allowlistCopy(email: model.email, sub: model.sub)
+              copied = true
             #endif
           }
         }

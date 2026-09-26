@@ -24,17 +24,17 @@ public func sessionExpired(expEpochSec: Int64, nowEpochSec: Int64) -> Bool {
 }
 
 /// Prefer the Google session; never fall back to the spike after it expires.
-public func liveBearer(session: String, sessionExp: Int64, spike: String, nowEpochSec: Int64) -> String {
+public func liveBearer(session: String, sessionExp: Int64, spike: String, nowEpochSec: Int64)
+  -> String
+{
   if !session.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
     return sessionExpired(expEpochSec: sessionExp, nowEpochSec: nowEpochSec) ? "" : session
   }
   return spike
 }
 
-/**
- Simulator / loopback may persist the lab secret. A debug build on a real
- phone must not write it to disk. Google session: never keep the spike.
- */
+/// Simulator / loopback may persist the lab secret. A debug build on a real
+/// phone must not write it to disk. Google session: never keep the spike.
 public func persistSpikeAllowed(origin: String, hasGoogleSession: Bool, debugBuild: Bool) -> Bool {
   if hasGoogleSession {
     return false
@@ -57,12 +57,14 @@ public func loopbackMailboxHost(_ origin: String) -> Bool {
 }
 
 public func mailboxSocketHint(code: Int?, detail: String?) -> String {
-  let bit = (detail?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "").isEmpty
+  let bit =
+    (detail?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "").isEmpty
     ? "retrying"
     : detail!.trimmingCharacters(in: .whitespacesAndNewlines)
   switch code {
   case 401, 403:
-    return "Mailbox refused the socket (HTTP \(code!)). Google worked, but this crane’s room list may not include you."
+    return
+      "Mailbox refused the socket (HTTP \(code!)). Google worked, but this crane’s room list may not include you."
   case 404:
     return "Mailbox has no socket for this crane name (HTTP 404)."
   case nil:
@@ -75,7 +77,8 @@ public func mailboxSocketHint(code: Int?, detail: String?) -> String {
 public func mailboxSignedInHint(email: String, cranes: [String]) -> String {
   let who = email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "you" : email
   if cranes.isEmpty {
-    return "Google worked (\(who)), but this mailbox listed no cranes for you. The socket stays offline until you’re on the room list."
+    return
+      "Google worked (\(who)), but this mailbox listed no cranes for you. The socket stays offline until you’re on the room list."
   }
   return "Signed in as \(who)"
 }
@@ -97,11 +100,9 @@ public let sweepMinGapMs: Int64 = 10_000
 /// While a thread is on some screen, sweep the mailbox this often.
 public let sweepEveryMs: Int64 = 2 * 60_000
 
-/**
- A quiet sweep is worth its handshake only while someone is looking at the
- thread. The mailbox does not push what another mouth of yours sent; a
- connect flush is how it comes over, so we take one on a slow tick.
- */
+/// A quiet sweep is worth its handshake only while someone is looking at the
+/// thread. The mailbox does not push what another mouth of yours sent; a
+/// connect flush is how it comes over, so we take one on a slow tick.
 public func watchingThread(phoneResumed: Bool, carThreadVisible: Bool) -> Bool {
   phoneResumed || carThreadVisible
 }
@@ -121,10 +122,8 @@ public func mailboxHttpDropsSession(_ httpCode: Int?) -> Bool {
   httpCode == 401
 }
 
-/**
- Mailbox close `4401` is "this credential may not talk" — yanked `sub`,
- expired session on the next frame, later an `iat` floor. Drop the JWE.
- */
+/// Mailbox close `4401` is "this credential may not talk" — yanked `sub`,
+/// expired session on the next frame, later an `iat` floor. Drop the JWE.
 public let mailboxCloseUnauthorized = 4401
 
 public func mailboxCloseDropsAuth(_ code: Int) -> Bool {

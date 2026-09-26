@@ -43,6 +43,9 @@ jobs:
           chmod +x scripts/*.sh test/scripts/*.test.sh
           make test-scripts
 
+      - name: Swift format
+        run: make lint
+
       - name: Mailbox tests + coverage
         run: |
           set -euo pipefail

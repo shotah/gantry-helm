@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Mailbox
 
 final class CarPlayTests: XCTestCase {
@@ -19,7 +20,8 @@ final class CarPlayTests: XCTestCase {
     let raw = encodeFrame(frame)
     XCTAssertEqual("carplay", frame.context?.surface)
     XCTAssertTrue(raw.contains("carplay"))
-    XCTAssertFalse(encodeFrame(inbound("hi", id: "c2", context: PhoneContext(surface: "ios"))).isEmpty)
+    XCTAssertFalse(
+      encodeFrame(inbound("hi", id: "c2", context: PhoneContext(surface: "ios"))).isEmpty)
   }
 
   func testCarAudioPortMeansAttachedLikeCabProjection() {

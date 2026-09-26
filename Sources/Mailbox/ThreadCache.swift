@@ -17,12 +17,10 @@ public struct ThreadRoom: Equatable {
   }
 }
 
-/**
- Settled bubbles only, like pendant `persistableThread`: a `sending` bubble
- either lands (the transcript replays it) or never did; a draft is Kit
- mid-sentence. Neither should greet you as history. `live` is a this-session
- SwiftUI id — a reload must not keep it.
- */
+/// Settled bubbles only, like pendant `persistableThread`: a `sending` bubble
+/// either lands (the transcript replays it) or never did; a draft is Kit
+/// mid-sentence. Neither should greet you as history. `live` is a this-session
+/// SwiftUI id — a reload must not keep it.
 public func persistableThread(_ lines: [ChatLine]) -> [ChatLine] {
   lines.filter { !$0.pending && !isDraftBubble($0.kind) }
     .map { line in
@@ -59,7 +57,7 @@ public final class ThreadCache {
       _ = try? FileManager.default.removeItem(at: file)
       try FileManager.default.moveItem(at: tmp, to: file)
     } catch {
-      /* a cache that cannot write is still a cache */
+      // a cache that cannot write is still a cache
     }
   }
 }

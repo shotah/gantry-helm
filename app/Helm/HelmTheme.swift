@@ -1,5 +1,5 @@
-import SwiftUI
 import Mailbox
+import SwiftUI
 
 extension Color {
   init(rgb: UInt32) {

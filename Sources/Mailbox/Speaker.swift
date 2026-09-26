@@ -60,7 +60,8 @@ public func speakFailHint(_ reason: SpeakFail) -> String {
   case .busy:
     return "Kit's voice: too many requests, try again in a moment."
   case .vendor:
-    return "Kit's voice failed at Google. Check the Cloud Text-to-Speech API and the key restriction."
+    return
+      "Kit's voice failed at Google. Check the Cloud Text-to-Speech API and the key restriction."
   case .offline:
     return "Kit's voice: could not reach the Worker."
   case .play:

@@ -1,7 +1,7 @@
 import Foundation
+import Intents
 import Mailbox
 import UserNotifications
-import Intents
 
 enum HelmNotify {
   static let category = kitReplyCategory
@@ -23,7 +23,9 @@ enum HelmNotify {
       options: [.allowInCarPlay, .allowAnnouncement]
     )
     UNUserNotificationCenter.current().setNotificationCategories([cat])
-    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .carPlay]) { _, _ in }
+    UNUserNotificationCenter.current().requestAuthorization(options: [
+      .alert, .sound, .badge, .carPlay,
+    ]) { _, _ in }
   }
 
   static func postKit(slug: String, body: String, replay: Bool) {
@@ -38,14 +40,16 @@ enum HelmNotify {
     content.sound = .default
     content.interruptionLevel = .timeSensitive
     let intent = INSendMessageIntent(
-      recipients: [INPerson(
-        personHandle: INPersonHandle(value: slug, type: .unknown),
-        nameComponents: nil,
-        displayName: displaySlug(slug),
-        image: nil,
-        contactIdentifier: nil,
-        customIdentifier: slug
-      )],
+      recipients: [
+        INPerson(
+          personHandle: INPersonHandle(value: slug, type: .unknown),
+          nameComponents: nil,
+          displayName: displaySlug(slug),
+          image: nil,
+          contactIdentifier: nil,
+          customIdentifier: slug
+        )
+      ],
       outgoingMessageType: .outgoingMessageText,
       content: body,
       speakableGroupName: INSpeakableString(spokenPhrase: displaySlug(slug)),
@@ -74,7 +78,8 @@ enum HelmNotify {
   static func dismissKit() {
     let center = UNUserNotificationCenter.current()
     center.getDeliveredNotifications { notes in
-      let ids = notes.filter { $0.request.content.threadIdentifier == thread }.map(\.request.identifier)
+      let ids = notes.filter { $0.request.content.threadIdentifier == thread }.map(
+        \.request.identifier)
       center.removeDeliveredNotifications(withIdentifiers: ids)
     }
   }

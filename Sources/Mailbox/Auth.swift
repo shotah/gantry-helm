@@ -1,6 +1,7 @@
 import Foundation
+
 #if canImport(FoundationNetworking)
-import FoundationNetworking
+  import FoundationNetworking
 #endif
 
 public struct AuthConfig: Equatable {
@@ -83,7 +84,8 @@ public func parseAuthConfig(_ raw: String) -> AuthConfig {
   guard let o = JSON.object(raw) else {
     return AuthConfig(mode: nil, google: false)
   }
-  return AuthConfig(mode: JSON.string(o, "mode"), google: JSON.bool(o, "google"), voice: JSON.bool(o, "voice"))
+  return AuthConfig(
+    mode: JSON.string(o, "mode"), google: JSON.bool(o, "google"), voice: JSON.bool(o, "voice"))
 }
 
 public func parseNonce(_ raw: String) -> String? {
@@ -129,10 +131,8 @@ public final class AuthApi {
     return parseAuthConfig(body)
   }
 
-  /**
-   Server-issued native nonce when the Worker has `GET /api/auth/nonce`.
-   Missing route, junk body, or empty value → nil so the phone can mint.
-   */
+  /// Server-issued native nonce when the Worker has `GET /api/auth/nonce`.
+  /// Missing route, junk body, or empty value → nil so the phone can mint.
   public func nonce(origin: String) -> String? {
     do {
       let body = try get(httpOrigin(origin) + "/api/auth/nonce")

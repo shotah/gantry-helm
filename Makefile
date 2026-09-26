@@ -19,11 +19,14 @@ help: ## Show available targets
 	@echo "  make test-scripts    Semver + badge + release + hooks + helm-bake + glue (no Swift)"
 	@echo "  make test-app        Mailbox tests in Docker (\$$SWIFT_IMAGE)"
 	@echo "                       FILTER=SamplesTests to narrow"
-	@echo "  make coverage       Docker swift test --enable-code-coverage + 70% bar"
+	@echo "  make coverage        Docker swift test --enable-code-coverage + 70% bar"
+	@echo "  make lint            swift-format lint (Apple defaults, Docker)"
+	@echo "  make format          Rewrite Swift with swift-format"
 	@echo "  make check-app       test + coverage"
-	@echo "  make check           script tests + check-app"
+	@echo "  make check           lint + script tests + check-app"
 	@echo "  make bake            .env → app/Helm.local.xcconfig (gitignored)"
 	@echo "  make ios             xcodebuild Simulator, unsigned (macOS / Actions)"
+	@echo "  make shot            Simulator PNGs → assets/docs (macOS). SHOT=phone-thread"
 	@echo "  make install-hooks   Pre-commit: tests. Pre-push: coverage."
 	@echo "  make version         Show VERSION + next tag (dry-run)"
 	@echo "  make release         Bump tag + latest, update VERSION, push"
@@ -45,6 +48,8 @@ test-scripts: ## Semver + coverage-badge + release + hooks + bake (no Swift tool
 	./test/scripts/helm-carplay.test.sh
 	./test/scripts/helm-glue.test.sh
 	./test/scripts/helm-parity.test.sh
+	./test/scripts/helm-shot.test.sh
+	./test/scripts/swift-format.test.sh
 
 .PHONY: test-app
 test-app: ## Mailbox Swift tests (Docker)
@@ -71,12 +76,25 @@ coverage-badge: coverage ## Write badges/coverage.svg
 .PHONY: check-app
 check-app: coverage ## Mailbox tests + 70% coverage
 
+.PHONY: format
+format: ## Rewrite Swift sources with swift-format (Apple defaults in .swift-format)
+	docker run --rm --user "$(shell id -u):$(shell id -g)" -v "$(CURDIR)":/src -w /src $(SWIFT_IMAGE) \
+	  ./scripts/swift-format.sh format
+
+.PHONY: lint
+lint: ## Fail if swift-format would change Swift sources
+	$(DOCKER_SWIFT) ./scripts/swift-format.sh lint
+
 .PHONY: check
-check: test-scripts check-app ## Script tests + Mailbox tests + 70% coverage
+check: lint test-scripts check-app ## Lint + script tests + Mailbox tests + 70% coverage
 
 .PHONY: bake
 bake: ## Write app/Helm.local.xcconfig from .env
 	./scripts/helm-bake.sh
+
+.PHONY: shot
+shot: ## Simulator screenshots into assets/docs (needs Xcode)
+	./scripts/helm-shot.sh
 
 .PHONY: ios
 ios: ## Build the iOS app unsigned (needs Xcode)

@@ -1,12 +1,13 @@
-import SwiftUI
 import Mailbox
+import SwiftUI
+
 #if canImport(GoogleSignIn)
-import GoogleSignIn
+  import GoogleSignIn
 #endif
 
 @main
 struct HelmApp: App {
-  @StateObject private var model = HelmModel(sample: Self.launchSample())
+  @StateObject private var model = Self.makeModel()
 
   var body: some Scene {
     WindowGroup {
@@ -19,11 +20,15 @@ struct HelmApp: App {
     }
   }
 
-  static func launchSample() -> String? {
+  static func makeModel() -> HelmModel {
     #if DEBUG
-    launchSampleId(ProcessInfo.processInfo.arguments)
+      let args = ProcessInfo.processInfo.arguments
+      if let shot = launchDocShot(args) {
+        return HelmModel(sample: shot.sample, theme: shot.theme, open: shot.open)
+      }
+      return HelmModel(sample: launchSampleId(args))
     #else
-    nil
+      return HelmModel()
     #endif
   }
 }

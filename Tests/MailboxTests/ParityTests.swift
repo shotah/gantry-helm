@@ -1,22 +1,23 @@
 import XCTest
+
 @testable import Mailbox
 
 final class ParityTests: XCTestCase {
   func testAimsDropsABadRowAndAHalfFormedBlockButKeepsTheBoard() {
     let raw = """
-    {"kind":"aims","aims":[
-      {"area":"Nope","sentence":"no","rating30":1,"sum7":0,"streak":0,"note":"","days":[]},
-      {"area":"training","sentence":"Lift.","rating30":1.4,"sum7":6,"streak":2,"note":"asked",
-       "days":[{"day":"2026-09-01","score":1,"events":[4]},{"day":"bad","score":1}],
-       "slope":0.3,
-       "block":{"days":10,"up":4,"against":6,"mean":0.2},
-       "effect":{"a":"training","b":"sleep","metric":"weight","r":-0.42,"n":9}},
-      {"area":"sleep","sentence":"In bed.","rating30":-0.4,"sum7":-1,"streak":0,"note":"quiet","days":[]}
-    ],"links":[
-      {"a":"training","b":"training","r":0.2,"n":3},
-      {"a":"training","b":"sleep","r":0.38,"n":12}
-    ]}
-    """
+      {"kind":"aims","aims":[
+        {"area":"Nope","sentence":"no","rating30":1,"sum7":0,"streak":0,"note":"","days":[]},
+        {"area":"training","sentence":"Lift.","rating30":1.4,"sum7":6,"streak":2,"note":"asked",
+         "days":[{"day":"2026-09-01","score":1,"events":[4]},{"day":"bad","score":1}],
+         "slope":0.3,
+         "block":{"days":10,"up":4,"against":6,"mean":0.2},
+         "effect":{"a":"training","b":"sleep","metric":"weight","r":-0.42,"n":9}},
+        {"area":"sleep","sentence":"In bed.","rating30":-0.4,"sum7":-1,"streak":0,"note":"quiet","days":[]}
+      ],"links":[
+        {"a":"training","b":"training","r":0.2,"n":3},
+        {"a":"training","b":"sleep","r":0.38,"n":12}
+      ]}
+      """
     let frame = parseFrame(raw)!
     XCTAssertEqual("aims", frame.kind)
     XCTAssertEqual(2, frame.aims?.aims.count)
@@ -33,7 +34,10 @@ final class ParityTests: XCTestCase {
 
   func testEmptyAimsClearsAndAMissingArrayIsJunk() {
     let mouth = Mouth()
-    mouth.ingest(parseFrame(#"{"kind":"aims","aims":[{"area":"training","sentence":"Lift.","rating30":0,"sum7":0,"streak":0,"note":"","days":[]}]}"#)!)
+    mouth.ingest(
+      parseFrame(
+        #"{"kind":"aims","aims":[{"area":"training","sentence":"Lift.","rating30":0,"sum7":0,"streak":0,"note":"","days":[]}]}"#
+      )!)
     XCTAssertEqual(1, mouth.aims.aims.count)
     XCTAssertTrue(mouth.lines.isEmpty)
     mouth.ingest(parseFrame(#"{"kind":"aims","text":"nope"}"#)!)
@@ -95,7 +99,8 @@ final class ParityTests: XCTestCase {
   }
 
   func testSpokenInputRidesTheContext() {
-    let raw = encodeFrame(inbound("on the dock", id: "v1", context: PhoneContext(input: inputHint(spoken: true))))
+    let raw = encodeFrame(
+      inbound("on the dock", id: "v1", context: PhoneContext(input: inputHint(spoken: true))))
     XCTAssertTrue(raw.contains("spoken"))
     XCTAssertNil(inputOnWire("typed"))
     XCTAssertNil(inputHint(spoken: false))
@@ -139,11 +144,16 @@ final class ParityTests: XCTestCase {
     XCTAssertTrue(disarmsVoice("error"))
     XCTAssertTrue(voiceBarShown(offered: true, on: true))
     XCTAssertFalse(voiceBarShown(offered: false, on: true))
-    XCTAssertEqual("Live · voice…", threadStatusLine(up: true, hint: "Live", typingUntil: 9, nowMs: 1, speak: .fetching))
-    XCTAssertEqual("Live · speaking", threadStatusLine(up: true, hint: "", typingUntil: 0, nowMs: 1, speak: .playing))
+    XCTAssertEqual(
+      "Live · voice…",
+      threadStatusLine(up: true, hint: "Live", typingUntil: 9, nowMs: 1, speak: .fetching))
+    XCTAssertEqual(
+      "Live · speaking",
+      threadStatusLine(up: true, hint: "", typingUntil: 0, nowMs: 1, speak: .playing))
     XCTAssertEqual("ja-JP", speechLang("ja"))
     XCTAssertEqual("en", parseLang("nope"))
-    XCTAssertEqual("Kit's voice is off on this Worker (no TTS key, or VOICE=off).", speakFailHint(.noVoice))
+    XCTAssertEqual(
+      "Kit's voice is off on this Worker (no TTS key, or VOICE=off).", speakFailHint(.noVoice))
     XCTAssertEqual(.noVoice, speakFailFromStatus(404))
     XCTAssertEqual(.unauthorized, speakFailFromStatus(401))
   }
@@ -152,7 +162,10 @@ final class ParityTests: XCTestCase {
     let http = MockHTTP()
     http.queue = [HTTPResult(status: 200, body: Data([0xFF, 0xFB]))]
     let api = TtsApi(transport: http)
-    guard case .ok(let bytes) = api.synthesize(origin: "http://mailbox.test/", bearer: "jwe", text: "hi", lang: "ja") else {
+    guard
+      case .ok(let bytes) = api.synthesize(
+        origin: "http://mailbox.test/", bearer: "jwe", text: "hi", lang: "ja")
+    else {
       return XCTFail("expected mp3")
     }
     XCTAssertEqual(2, bytes.count)
@@ -162,7 +175,8 @@ final class ParityTests: XCTestCase {
     XCTAssertTrue(body.contains("ja"))
     XCTAssertEqual("Bearer jwe", http.requests[0].value(forHTTPHeaderField: "Authorization"))
     http.queue = [HTTPResult(status: 404, body: Data())]
-    XCTAssertEqual(.err(.noVoice), api.synthesize(origin: "http://mailbox.test/", bearer: "jwe", text: "hi"))
+    XCTAssertEqual(
+      .err(.noVoice), api.synthesize(origin: "http://mailbox.test/", bearer: "jwe", text: "hi"))
   }
 
   func testConfigReadsVoice() {

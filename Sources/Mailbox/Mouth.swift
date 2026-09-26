@@ -144,11 +144,9 @@ public final class Mouth {
     lines = []
   }
 
-  /**
-   Last run's thread from disk. Ids already on the thread win (the mailbox
-   got there first); drafts never come back. Mailbox order, then capped.
-   Pendant `mergeThread`.
-   */
+  /// Last run's thread from disk. Ids already on the thread win (the mailbox
+  /// got there first); drafts never come back. Mailbox order, then capped.
+  /// Pendant `mergeThread`.
   public func hydrate(_ cached: [ChatLine]) {
     let have = Set(lines.map(\.id))
     let add = cached.filter { !have.contains($0.id) && !isDraftBubble($0.kind) }
@@ -293,12 +291,10 @@ public final class Mouth {
     }
   }
 
-  /**
-   A mailbox `error` names the frame it refused when it can (`id`); older
-   mailboxes and parse failures cannot, so fall back to your newest bubble
-   still marked sending. Same rule as pendant `failInThread`.
-   - Returns: false when there was nothing of yours to mark.
-   */
+  /// A mailbox `error` names the frame it refused when it can (`id`); older
+  /// mailboxes and parse failures cannot, so fall back to your newest bubble
+  /// still marked sending. Same rule as pendant `failInThread`.
+  /// - Returns: false when there was nothing of yours to mark.
   @discardableResult
   public func fail(id: String?, why: String) -> Bool {
     let byId = id.flatMap { want in lines.lastIndex(where: { $0.fromYou && $0.id == want }) } ?? -1
@@ -327,7 +323,8 @@ public final class Mouth {
     lines = capThread(
       placeInThread(
         rest,
-        ChatLine(id: draftId, fromYou: false, text: text, kind: "draft", at: prev?.at ?? now(), live: true)
+        ChatLine(
+          id: draftId, fromYou: false, text: text, kind: "draft", at: prev?.at ?? now(), live: true)
       ),
       max: threadMax
     )

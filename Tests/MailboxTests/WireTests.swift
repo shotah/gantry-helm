@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Mailbox
 
 final class WireTests: XCTestCase {
@@ -65,7 +66,8 @@ final class WireTests: XCTestCase {
       context: PhoneContext(
         at: "2026-09-10T12:00:00.000Z",
         tz: "UTC",
-        geo: geoFromFix(lat: 47.6, lon: -122.3, accuracyM: 12.0, altM: 12.5, heading: 90.0, speedMps: 4.2),
+        geo: geoFromFix(
+          lat: 47.6, lon: -122.3, accuracyM: 12.0, altM: 12.5, heading: 90.0, speedMps: 4.2),
         battery: BatteryHint(pct: 80, charging: true),
         net: "wifi",
         surface: "carplay"
@@ -75,7 +77,8 @@ final class WireTests: XCTestCase {
     XCTAssertTrue(raw.contains("\"pct\":80") || raw.contains("\"pct\": 80"))
     XCTAssertTrue(raw.contains("\"charging\":true") || raw.contains("\"charging\": true"))
     XCTAssertTrue(raw.contains("\"net\":\"wifi\"") || raw.contains("\"net\": \"wifi\""))
-    XCTAssertTrue(raw.contains("\"surface\":\"carplay\"") || raw.contains("\"surface\": \"carplay\""))
+    XCTAssertTrue(
+      raw.contains("\"surface\":\"carplay\"") || raw.contains("\"surface\": \"carplay\""))
     XCTAssertTrue(raw.contains("\"alt_m\":12.5") || raw.contains("12.5"))
     XCTAssertTrue(raw.contains("\"heading\":90") || raw.contains("90"))
     XCTAssertTrue(raw.contains("\"speed_mps\":4.2") || raw.contains("4.2"))
@@ -96,7 +99,8 @@ final class WireTests: XCTestCase {
   }
 
   func testCaptionAndPhotoTravelOnOneInbound() {
-    let frame = inbound("this hatch?", id: "id-cap", context: nil, images: ["data:image/jpeg;base64,QQ"])
+    let frame = inbound(
+      "this hatch?", id: "id-cap", context: nil, images: ["data:image/jpeg;base64,QQ"])
     let got = parseFrame(encodeFrame(frame))!
     XCTAssertEqual("this hatch?", got.text)
     XCTAssertEqual(["data:image/jpeg;base64,QQ"], got.images)
@@ -196,7 +200,8 @@ final class WireTests: XCTestCase {
   }
 
   func testInboundOmitsEmptyTextAndKeepsPhotos() {
-    let frame = inbound("", id: "id-2", context: nil, images: ["data:image/jpeg;base64,aa", "https://x/b.jpg"])
+    let frame = inbound(
+      "", id: "id-2", context: nil, images: ["data:image/jpeg;base64,aa", "https://x/b.jpg"])
     let raw = encodeFrame(frame)
     let got = parseFrame(raw)!
     XCTAssertNil(got.text)
@@ -222,7 +227,8 @@ final class WireTests: XCTestCase {
       #"{"kind":"cmds","commands":[{"name":"NEW","hint":"reset this session","args":true},{"name":"nope"}]}"#
     )!
     XCTAssertEqual("cmds", got.kind)
-    XCTAssertEqual([SlashCommand(name: "new", hint: "reset this session", args: true)], got.commands)
+    XCTAssertEqual(
+      [SlashCommand(name: "new", hint: "reset this session", args: true)], got.commands)
   }
 
   func testBlankImageUrlsAndEmptyStringsAreDropped() {
@@ -259,7 +265,8 @@ final class WireTests: XCTestCase {
     XCTAssertEqual("cellular", netHint(wifi: false, cellular: true))
     XCTAssertEqual("unknown", netHint(wifi: false, cellular: false))
     XCTAssertEqual(BatteryHint(pct: 80, charging: true), batteryHintFromLevel(0.8, charging: true))
-    XCTAssertEqual(BatteryHint(pct: 100, charging: false), batteryHintFromLevel(0.995, charging: false))
+    XCTAssertEqual(
+      BatteryHint(pct: 100, charging: false), batteryHintFromLevel(0.995, charging: false))
     XCTAssertNil(batteryHintFromLevel(-1, charging: false))
   }
 

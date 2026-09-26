@@ -56,7 +56,8 @@ private func parseCommandList(_ raw: [Any]) -> [SlashCommand] {
     guard let obj = JSON.dict(item) else {
       continue
     }
-    let name = ((obj["name"] as? String) ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    let name = ((obj["name"] as? String) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+      .lowercased()
     let hint = ((obj["hint"] as? String) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
     let range = NSRange(name.startIndex..<name.endIndex, in: name)
     if nameRegex.firstMatch(in: name, range: range) == nil || name.count > commandNameMax {

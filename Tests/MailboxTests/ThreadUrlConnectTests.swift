@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Mailbox
 
 private struct Bubble: ThreadOrder {
@@ -11,7 +12,8 @@ private struct Bubble: ThreadOrder {
 final class ThreadTests: XCTestCase {
   func testCursorOfIsTheHighestStampedSeqNotLastArrival() {
     XCTAssertEqual(ThreadCursor(), cursorOf([Bubble]()))
-    XCTAssertEqual(ThreadCursor(), cursorOf([Bubble(id: "sending", at: 5), Bubble(id: "refused", at: 6)]))
+    XCTAssertEqual(
+      ThreadCursor(), cursorOf([Bubble(id: "sending", at: 5), Bubble(id: "refused", at: 6)]))
     let cur = cursorOf([
       Bubble(id: "a", at: 10, seq: 4),
       Bubble(id: "late", at: 5, seq: 2),
@@ -102,9 +104,12 @@ final class MailboxUrlTests: XCTestCase {
   }
 
   func testNormalizeMailboxOriginAcceptsWorkerAndCraneUrls() {
-    XCTAssertEqual("https://pendant.example.com", normalizeMailboxOrigin("https://pendant.example.com/"))
-    XCTAssertEqual("https://pendant.example.com", normalizeMailboxOrigin("https://pendant.example.com/ws/kit"))
-    XCTAssertEqual("https://pendant.example.com", normalizeMailboxOrigin("wss://pendant.example.com/ws/kit"))
+    XCTAssertEqual(
+      "https://pendant.example.com", normalizeMailboxOrigin("https://pendant.example.com/"))
+    XCTAssertEqual(
+      "https://pendant.example.com", normalizeMailboxOrigin("https://pendant.example.com/ws/kit"))
+    XCTAssertEqual(
+      "https://pendant.example.com", normalizeMailboxOrigin("wss://pendant.example.com/ws/kit"))
     XCTAssertEqual("http://10.0.2.2:3000", normalizeMailboxOrigin("ws://10.0.2.2:3000/ws/kit"))
     XCTAssertEqual(
       "https://gantry-pendant.example.workers.dev",
@@ -116,7 +121,8 @@ final class MailboxUrlTests: XCTestCase {
 
 final class MailboxConnectTests: XCTestCase {
   func testConnectNeedsASlugAndABearer() {
-    XCTAssertEqual("Talking to needs a crane slug like kit.", mailboxConnectError(slug: "Kit!", bearer: "tok"))
+    XCTAssertEqual(
+      "Talking to needs a crane slug like kit.", mailboxConnectError(slug: "Kit!", bearer: "tok"))
     XCTAssertTrue(mailboxConnectError(slug: "kit", bearer: "")!.contains("Google session"))
     XCTAssertNil(mailboxConnectError(slug: "kit", bearer: "jwe"))
   }
@@ -190,7 +196,8 @@ final class MailboxConnectTests: XCTestCase {
   }
 
   func testExpiredSessionIsAConnectError() {
-    XCTAssertTrue(mailboxConnectError(slug: "kit", bearer: "", sessionExpired: true)!.contains("expired"))
+    XCTAssertTrue(
+      mailboxConnectError(slug: "kit", bearer: "", sessionExpired: true)!.contains("expired"))
     XCTAssertNil(mailboxConnectError(slug: "kit", bearer: "jwe", sessionExpired: false))
   }
 
@@ -202,18 +209,32 @@ final class MailboxConnectTests: XCTestCase {
   }
 
   func testLiveBearerDoesNotFallBackToSpikeAfterGoogleExpires() {
-    XCTAssertEqual("jwe", liveBearer(session: "jwe", sessionExp: 200, spike: "secret", nowEpochSec: 50))
-    XCTAssertEqual("", liveBearer(session: "jwe", sessionExp: 100, spike: "secret", nowEpochSec: 100))
-    XCTAssertEqual("secret", liveBearer(session: "", sessionExp: 100, spike: "secret", nowEpochSec: 200))
+    XCTAssertEqual(
+      "jwe", liveBearer(session: "jwe", sessionExp: 200, spike: "secret", nowEpochSec: 50))
+    XCTAssertEqual(
+      "", liveBearer(session: "jwe", sessionExp: 100, spike: "secret", nowEpochSec: 100))
+    XCTAssertEqual(
+      "secret", liveBearer(session: "", sessionExp: 100, spike: "secret", nowEpochSec: 200))
   }
 
   func testPersistSpikeOnlyOnLoopbackDebug() {
-    XCTAssertTrue(persistSpikeAllowed(origin: "http://10.0.2.2:3000", hasGoogleSession: false, debugBuild: true))
-    XCTAssertTrue(persistSpikeAllowed(origin: "http://localhost:3000", hasGoogleSession: false, debugBuild: true))
-    XCTAssertTrue(persistSpikeAllowed(origin: "http://127.0.0.1:3000", hasGoogleSession: false, debugBuild: true))
-    XCTAssertFalse(persistSpikeAllowed(origin: "https://pendant.example.com", hasGoogleSession: false, debugBuild: true))
-    XCTAssertTrue(persistSpikeAllowed(origin: "https://pendant.example.com", hasGoogleSession: false, debugBuild: false))
-    XCTAssertFalse(persistSpikeAllowed(origin: "http://10.0.2.2:3000", hasGoogleSession: true, debugBuild: true))
+    XCTAssertTrue(
+      persistSpikeAllowed(origin: "http://10.0.2.2:3000", hasGoogleSession: false, debugBuild: true)
+    )
+    XCTAssertTrue(
+      persistSpikeAllowed(
+        origin: "http://localhost:3000", hasGoogleSession: false, debugBuild: true))
+    XCTAssertTrue(
+      persistSpikeAllowed(
+        origin: "http://127.0.0.1:3000", hasGoogleSession: false, debugBuild: true))
+    XCTAssertFalse(
+      persistSpikeAllowed(
+        origin: "https://pendant.example.com", hasGoogleSession: false, debugBuild: true))
+    XCTAssertTrue(
+      persistSpikeAllowed(
+        origin: "https://pendant.example.com", hasGoogleSession: false, debugBuild: false))
+    XCTAssertFalse(
+      persistSpikeAllowed(origin: "http://10.0.2.2:3000", hasGoogleSession: true, debugBuild: true))
     XCTAssertFalse(loopbackMailboxHost(""))
   }
 }

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Mailbox
 
 final class MouthTests: XCTestCase {
@@ -37,7 +38,8 @@ final class MouthTests: XCTestCase {
     let cmds = [SlashCommand(name: "new", hint: "reset this session")]
     mouth.ingest(WireFrame(kind: "cmds", commands: cmds))
     XCTAssertEqual(cmds, mouth.catalog)
-    mouth.replace(lines: [ChatLine(id: "1", fromYou: true, text: "hi", kind: "inbound")], up: true, hint: "ok")
+    mouth.replace(
+      lines: [ChatLine(id: "1", fromYou: true, text: "hi", kind: "inbound")], up: true, hint: "ok")
     XCTAssertEqual([], mouth.catalog)
     XCTAssertEqual(true, mouth.up)
     XCTAssertEqual(0, mouth.typingUntil)
@@ -149,9 +151,15 @@ final class MouthTests: XCTestCase {
 
   func testTranscriptReplayPaintsAndDedupesById() {
     let mouth = Mouth()
-    XCTAssertTrue(mouth.ingest(WireFrame(kind: "inbound", text: "hatch", id: "a", seq: 1, at: 10, replay: true)))
-    XCTAssertTrue(mouth.ingest(WireFrame(kind: "reply", text: "latched", id: "b", seq: 2, at: 20, replay: true)))
-    XCTAssertFalse(mouth.ingest(WireFrame(kind: "reply", text: "latched", id: "b", seq: 2, at: 20, replay: true)))
+    XCTAssertTrue(
+      mouth.ingest(WireFrame(kind: "inbound", text: "hatch", id: "a", seq: 1, at: 10, replay: true))
+    )
+    XCTAssertTrue(
+      mouth.ingest(WireFrame(kind: "reply", text: "latched", id: "b", seq: 2, at: 20, replay: true))
+    )
+    XCTAssertFalse(
+      mouth.ingest(WireFrame(kind: "reply", text: "latched", id: "b", seq: 2, at: 20, replay: true))
+    )
     XCTAssertEqual(["hatch", "latched"], mouth.lines.map(\.text))
   }
 
@@ -281,7 +289,8 @@ final class MouthTests: XCTestCase {
     mouth.ingest(WireFrame(kind: "reply", text: "first", id: "a", seq: 1, at: 10))
     XCTAssertEqual(["a", "b"], mouth.lines.map(\.id))
     mouth.ingest(WireFrame(kind: "draft", text: "⏳ spinning up"))
-    mouth.ingest(WireFrame(kind: "inbound", text: "I already sent this", id: "late", seq: 3, at: 15))
+    mouth.ingest(
+      WireFrame(kind: "inbound", text: "I already sent this", id: "late", seq: 3, at: 15))
     XCTAssertEqual(["a", "b", "late", draftId], mouth.lines.map(\.id))
     let restamp = mouth.ingest(WireFrame(kind: "reply", text: "second", id: "b", seq: 2, at: 20))
     XCTAssertEqual(false, restamp)
@@ -306,7 +315,10 @@ final class MouthTests: XCTestCase {
   func testHydrateStaysUnderTheCap() {
     let mouth = Mouth()
     mouth.add(ChatLine(id: "now", fromYou: false, text: "now", kind: "reply", at: 1_000))
-    mouth.hydrate((0..<100).map { ChatLine(id: "c\($0)", fromYou: false, text: "n\($0)", kind: "reply", at: Int64($0)) })
+    mouth.hydrate(
+      (0..<100).map {
+        ChatLine(id: "c\($0)", fromYou: false, text: "n\($0)", kind: "reply", at: Int64($0))
+      })
     XCTAssertEqual(80, mouth.lines.count)
     XCTAssertEqual("now", mouth.lines.last?.id)
     XCTAssertEqual("c21", mouth.lines.first?.id)
@@ -330,7 +342,8 @@ final class MouthTests: XCTestCase {
   func testEchoRestampKeepsPendingUntilAck() {
     let mouth = Mouth()
     mouth.add(ChatLine(id: "a1", fromYou: true, text: "hi", kind: "inbound", pending: true, at: 50))
-    XCTAssertEqual(false, mouth.ingest(WireFrame(kind: "inbound", text: "hi", id: "a1", seq: 4, at: 40)))
+    XCTAssertEqual(
+      false, mouth.ingest(WireFrame(kind: "inbound", text: "hi", id: "a1", seq: 4, at: 40)))
     let line = mouth.lines[0]
     XCTAssertEqual(4, line.seq)
     XCTAssertEqual(40, line.at)
@@ -345,8 +358,11 @@ final class MouthTests: XCTestCase {
       "socket down — reconnecting",
       threadStatusLine(up: false, hint: "socket down — reconnecting", typingUntil: 9, nowMs: 1)
     )
-    XCTAssertEqual("Live · typing…", threadStatusLine(up: true, hint: "Live", typingUntil: 9, nowMs: 1))
-    XCTAssertEqual("pin ±12m this send", threadStatusLine(up: true, hint: "pin ±12m this send", typingUntil: 1, nowMs: 1))
+    XCTAssertEqual(
+      "Live · typing…", threadStatusLine(up: true, hint: "Live", typingUntil: 9, nowMs: 1))
+    XCTAssertEqual(
+      "pin ±12m this send",
+      threadStatusLine(up: true, hint: "pin ±12m this send", typingUntil: 1, nowMs: 1))
     XCTAssertEqual("Live", threadStatusLine(up: true, hint: "", typingUntil: 0, nowMs: 1))
   }
 }

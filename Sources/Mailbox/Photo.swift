@@ -5,10 +5,8 @@ public let imageBytesMax = 1_500_000
 public let chatPhotoEdge = 1600
 private let imageB64Max = imageBytesMax / 3 * 4 + 64
 
-/**
- Raw JPEG budget. Base64 is 4/3 of the bytes plus the `data:image/jpeg;base64,`
- prefix, so encode to this, not `imageBytesMax`. Mirrors pendant `lib/phone/photo.ts`.
- */
+/// Raw JPEG budget. Base64 is 4/3 of the bytes plus the `data:image/jpeg;base64,`
+/// prefix, so encode to this, not `imageBytesMax`. Mirrors pendant `lib/phone/photo.ts`.
 public let photoJpegBytesMax = (imageBytesMax - 32) / 4 * 3
 
 /// Quality ladder per edge, then the edge shrinks by `jpegEdgeStep` until `jpegEdgeMin`.
@@ -16,11 +14,9 @@ public let jpegQualitySteps = [90, 80, 70, 60]
 public let jpegEdgeStep = 0.75
 public let jpegEdgeMin = 320
 
-/**
- Settings → Photo size. Long edge in px. Vision models bill by pixel area
- (~w·h/750 tokens) and clamp near 1 MP, so Full mostly buys wire bytes, not
- detail. Same ids and edges as the pendant PWA so "Medium" means one thing.
- */
+/// Settings → Photo size. Long edge in px. Vision models bill by pixel area
+/// (~w·h/750 tokens) and clamp near 1 MP, so Full mostly buys wire bytes, not
+/// detail. Same ids and edges as the pendant PWA so "Medium" means one thing.
 public struct PhotoSize: Equatable {
   public var id: String
   public var label: String
@@ -89,11 +85,9 @@ public func photoSizeChip(_ id: String?) -> String {
   return "\(s.label) · \(s.edge) px"
 }
 
-/**
- Encode attempts, biggest first. Draw at `min(edge, longest)` (never upscale),
- walk `jpegQualitySteps`, then edge × `jpegEdgeStep` and repeat until the
- next edge would drop under `jpegEdgeMin`. Mirrors pendant `jpegFromFile`.
- */
+/// Encode attempts, biggest first. Draw at `min(edge, longest)` (never upscale),
+/// walk `jpegQualitySteps`, then edge × `jpegEdgeStep` and repeat until the
+/// next edge would drop under `jpegEdgeMin`. Mirrors pendant `jpegFromFile`.
 public func shrinkSteps(edge: Int, longest: Int) -> [JpegStep] {
   var out: [JpegStep] = []
   var target = max(min(edge, longest), 1)
@@ -143,10 +137,8 @@ public func photoDataUrl(_ bytes: Data, mime: String = "image/jpeg") -> PhotoRes
   return .ok(url: "data:\(kind);base64,\(b64)")
 }
 
-/**
- Attach encodes and holds; Send emits one inbound. Empty caption is allowed
- when a photo is staged. Same rule as pendant Compose (`!t && !photo`).
- */
+/// Attach encodes and holds; Send emits one inbound. Empty caption is allowed
+/// when a photo is staged. Same rule as pendant Compose (`!t && !photo`).
 public func composeHasTurn(text: String, photo: String?) -> Bool {
   !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !(photo ?? "").isEmpty
 }
