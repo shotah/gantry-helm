@@ -6,10 +6,12 @@ import FoundationNetworking
 public struct AuthConfig: Equatable {
   public var mode: String?
   public var google: Bool
+  public var voice: Bool
 
-  public init(mode: String?, google: Bool) {
+  public init(mode: String?, google: Bool, voice: Bool = false) {
     self.mode = mode
     self.google = google
+    self.voice = voice
   }
 }
 
@@ -81,7 +83,7 @@ public func parseAuthConfig(_ raw: String) -> AuthConfig {
   guard let o = JSON.object(raw) else {
     return AuthConfig(mode: nil, google: false)
   }
-  return AuthConfig(mode: JSON.string(o, "mode"), google: JSON.bool(o, "google"))
+  return AuthConfig(mode: JSON.string(o, "mode"), google: JSON.bool(o, "google"), voice: JSON.bool(o, "voice"))
 }
 
 public func parseNonce(_ raw: String) -> String? {

@@ -76,6 +76,29 @@ final class HelmPrefs {
     set { d.set(newValue ? "on" : "off", forKey: Keys.followTheme) }
   }
 
+  /// Header mic. Off unless it says `on`.
+  var voice: Bool {
+    get { d.string(forKey: Keys.voice) == "on" }
+    set { d.set(newValue ? "on" : "off", forKey: Keys.voice) }
+  }
+
+  /// Last `/api/auth/config` `voice` answer. Missing stays false.
+  var voiceOffered: Bool {
+    get { d.string(forKey: Keys.voiceOffered) == "on" }
+    set { d.set(newValue ? "on" : "off", forKey: Keys.voiceOffered) }
+  }
+
+  var lang: String {
+    get { parseLang(d.string(forKey: Keys.lang)) }
+    set { d.set(parseLang(newValue), forKey: Keys.lang) }
+  }
+
+  /// Area → row of the board last opened. Badge counts changes, not aims.
+  var aimsSeen: String {
+    get { d.string(forKey: Keys.aimsSeen) ?? "" }
+    set { d.set(newValue, forKey: Keys.aimsSeen) }
+  }
+
   var lastGeo: Geo? {
     get {
       guard d.object(forKey: Keys.geoLat) != nil else {
@@ -174,5 +197,9 @@ final class HelmPrefs {
     static let geoLat = "geo_lat"
     static let geoLon = "geo_lon"
     static let geoAcc = "geo_acc"
+    static let voice = "voice"
+    static let voiceOffered = "voiceOffered"
+    static let lang = "lang"
+    static let aimsSeen = "aimsSeen"
   }
 }

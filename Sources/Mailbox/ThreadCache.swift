@@ -133,6 +133,9 @@ private func encodeLine(_ line: ChatLine) -> [String: Any] {
   if let failed = line.failed {
     o["failed"] = failed
   }
+  if let reaction = line.reaction, !reaction.isEmpty {
+    o["reaction"] = reaction
+  }
   return o
 }
 
@@ -164,6 +167,10 @@ private func decodeLine(_ o: [String: Any]) -> ChatLine? {
     failed: {
       let f = (o["failed"] as? String) ?? ""
       return f.isEmpty ? nil : f
+    }(),
+    reaction: {
+      let r = (o["reaction"] as? String) ?? ""
+      return r.isEmpty ? nil : r
     }()
   )
 }

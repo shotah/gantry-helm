@@ -18,7 +18,14 @@ struct HelmRoot: View {
     }
     .tint(Color(rgb: colors.accent))
     .onChange(of: scenePhase) { phase in
-      model.resumed = phase == .active
+      model.setResumed(phase == .active)
+    }
+    .sheet(isPresented: $model.showGoals, onDismiss: {
+      model.markAimsSeen()
+    }) {
+      HelmGoals()
+        .environmentObject(model)
+        .onAppear { model.markAimsSeen() }
     }
   }
 }
@@ -49,6 +56,34 @@ struct HelmScreen: View {
             }
           }
           Spacer()
+          if model.voiceOffered {
+            Button {
+              model.toggleVoice()
+            } label: {
+              Image(systemName: model.voiceOn ? "mic.fill" : "mic")
+                .foregroundStyle(Color(rgb: colors.fg))
+            }
+            .accessibilityLabel(model.voiceOn ? "Voice on" : "Voice")
+          }
+          if !model.aims.isEmpty {
+            Button {
+              model.showGoals = true
+            } label: {
+              Image(systemName: "scope")
+                .foregroundStyle(Color(rgb: colors.fg))
+                .overlay(alignment: .topTrailing) {
+                  if model.goalsChanged > 0 {
+                    Text("\(model.goalsChanged)")
+                      .font(.caption2)
+                      .padding(3)
+                      .background(Color(rgb: colors.accent))
+                      .clipShape(Circle())
+                      .offset(x: 8, y: -8)
+                  }
+                }
+            }
+            .accessibilityLabel(goalsLabel(model.goalsChanged))
+          }
           Button {
             model.showSettings = true
           } label: {
@@ -81,7 +116,8 @@ struct HelmScreen: View {
       up: model.up,
       hint: model.hint,
       typingUntil: model.typingUntil,
-      nowMs: Int64(now.timeIntervalSince1970 * 1000)
+      nowMs: Int64(now.timeIntervalSince1970 * 1000),
+      speak: model.speakPhase
     )
   }
 }
@@ -159,6 +195,9 @@ struct HelmChat: View {
         if let photo = line.photo, let data = decodeDataUrl(photo), let img = helmImage(data) {
           img.resizable().scaledToFit().frame(maxWidth: 220).clipShape(RoundedRectangle(cornerRadius: 10))
         }
+        if let reaction = line.reaction, !reaction.isEmpty {
+          Text(reaction).font(.caption)
+        }
         if line.pending {
           Text("sending").font(.caption2).foregroundStyle(Color(rgb: colors.dim))
         }
@@ -167,6 +206,15 @@ struct HelmChat: View {
         }
       }
       if !line.fromYou { Spacer(minLength: 48) }
+    }
+    .contextMenu {
+      if canReact(fromYou: line.fromYou, kind: line.kind, id: line.id) {
+        ForEach(reactionPalette, id: \.self) { emoji in
+          Button(emoji) {
+            model.react(id: line.id, emoji: toggleReaction(line.reaction, emoji))
+          }
+        }
+      }
     }
   }
 

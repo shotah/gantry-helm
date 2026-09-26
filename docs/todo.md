@@ -55,6 +55,20 @@ letting another app read the thread are the failures that matter.
       `UIDevice` level + `NWPathMonitor` peek.
 - [x] **DEBUG sample chips.** Settings paints `sampleIds`. Release
       strips them. Does not persist or connect.
+- [x] **`aims` board.** Parse with the 5 / 14 / 13 / 3 caps. Not a
+      turn. Header target badges changes since the sheet was open
+      (`helm` / `aimsSeen`). Sheet copy matches Cab. CarPlay shows
+      nothing.
+- [x] **`react`.** Ignore-then-paint on a Kit `reply` / `push`.
+      Context menu is the palette. Socket down does not paint a chip.
+- [x] **`seen` on ack.** Connect while the thread is up, and each
+      live `reply` / `push`, send `ack` `seen: true`. A sibling
+      inbound or a seen ack drops the local card.
+- [x] **Pocket voice.** Header mic when config says `voice`. Hold
+      bar, `SFSpeechRecognizer` in the Language locale, `POST /api/tts`
+      with `lang`. Settings → Language is the same four ids.
+
+Device `act` stays out until pendant routes `kind=helm`.
 
 ## Medium
 

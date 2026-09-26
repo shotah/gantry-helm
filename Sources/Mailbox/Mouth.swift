@@ -17,9 +17,18 @@ public func clearsTyping(_ kind: String?) -> Bool {
 }
 
 /// Caption under the crane name. Typing wins while the TTL is live.
-public func threadStatusLine(up: Bool, hint: String, typingUntil: Int64, nowMs: Int64) -> String {
+public func threadStatusLine(
+  up: Bool,
+  hint: String,
+  typingUntil: Int64,
+  nowMs: Int64,
+  speak: SpeakPhase = .idle
+) -> String {
   if !up {
     return hint.isEmpty ? "Offline" : hint
+  }
+  if speak != .idle {
+    return "Live · \(speakStatus(speak))"
   }
   if typingUntil > nowMs {
     return "Live · typing…"
@@ -40,6 +49,8 @@ public struct ChatLine: Equatable, ThreadOrder {
   public var failed: String?
   /// This-session SwiftUI id; never persist (pendant `live`).
   public var live: Bool
+  /// Emoji chip. Empty means none. Not a turn.
+  public var reaction: String?
 
   public init(
     id: String,
@@ -51,7 +62,8 @@ public struct ChatLine: Equatable, ThreadOrder {
     at: Int64 = 0,
     seq: Int? = nil,
     failed: String? = nil,
-    live: Bool = false
+    live: Bool = false,
+    reaction: String? = nil
   ) {
     self.id = id
     self.fromYou = fromYou
@@ -63,6 +75,7 @@ public struct ChatLine: Equatable, ThreadOrder {
     self.seq = seq
     self.failed = failed
     self.live = live
+    self.reaction = reaction
   }
 }
 
@@ -76,6 +89,7 @@ public final class Mouth {
   public private(set) var roomTheme = ""
   public private(set) var faceHint = ""
   public private(set) var typingUntil: Int64 = 0
+  public private(set) var aims = AimsBoard()
   private let now: () -> Int64
 
   public init(now: @escaping () -> Int64 = { Int64(Date().timeIntervalSince1970 * 1000) }) {
@@ -122,6 +136,7 @@ public final class Mouth {
     typingUntil = 0
     backdropRev = 0
     roomTheme = ""
+    aims = AimsBoard()
   }
 
   /// Another room (or human) is coming up; its transcript replays on connect.
@@ -173,6 +188,12 @@ public final class Mouth {
       catalog = frame.commands ?? []
       return false
     }
+    if frame.kind == "aims" {
+      if let board = frame.aims {
+        aims = board
+      }
+      return false
+    }
     if frame.kind == "error" {
       if !fail(id: frame.id, why: describeSendError(frame.text)) {
         let t = frame.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
@@ -193,6 +214,13 @@ public final class Mouth {
       if let id = frame.id {
         ack(id)
       }
+      return false
+    }
+    if frame.kind == "react" {
+      guard let id = frame.id, let text = parseReactionText(frame.text) else {
+        return false
+      }
+      applyReaction(id: id, text: text)
       return false
     }
     if frame.kind == "allow" || frame.kind == "pin" {
@@ -233,6 +261,25 @@ public final class Mouth {
         live: fromDraft
       )
     )
+    return true
+  }
+
+  @discardableResult
+  public func applyReaction(id: String, text: String) -> Bool {
+    let chip: String? = text.isEmpty ? nil : text
+    guard let at = lines.firstIndex(where: { $0.id == id }) else {
+      return false
+    }
+    if lines[at].reaction == chip {
+      return false
+    }
+    lines = lines.enumerated().map { i, line in
+      var line = line
+      if i == at {
+        line.reaction = chip
+      }
+      return line
+    }
     return true
   }
 

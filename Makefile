@@ -44,6 +44,7 @@ test-scripts: ## Semver + coverage-badge + release + hooks + bake (no Swift tool
 	./test/scripts/helm-bake.test.sh
 	./test/scripts/helm-carplay.test.sh
 	./test/scripts/helm-glue.test.sh
+	./test/scripts/helm-parity.test.sh
 
 .PHONY: test-app
 test-app: ## Mailbox Swift tests (Docker)

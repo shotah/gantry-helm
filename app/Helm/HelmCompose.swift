@@ -4,6 +4,45 @@ import Mailbox
 import PhotosUI
 #endif
 
+struct HelmHoldBar: View {
+  @EnvironmentObject var model: HelmModel
+  var colors: HelmColors
+  @State private var holding = false
+  @State private var aborted = false
+
+  var body: some View {
+    let speak = speakBarLabel(model.speakPhase)
+    let title = holding ? holdLabel(model.hold) : (speak.isEmpty ? holdLabel(model.hold == .blocked ? .blocked : .idle) : speak)
+    Text(title)
+      .frame(maxWidth: .infinity)
+      .padding(12)
+      .background(Color(rgb: colors.track))
+      .clipShape(RoundedRectangle(cornerRadius: 10))
+      .accessibilityLabel("Hold to talk")
+      .gesture(
+        DragGesture(minimumDistance: 0)
+          .onChanged { g in
+            if !holding && !aborted {
+              holding = true
+              model.voiceDown()
+            }
+            if holding && (abs(g.translation.width) > 10 || abs(g.translation.height) > 10) {
+              holding = false
+              aborted = true
+              model.voiceCancel()
+            }
+          }
+          .onEnded { _ in
+            if holding {
+              model.voiceUp()
+            }
+            holding = false
+            aborted = false
+          }
+      )
+  }
+}
+
 struct HelmCompose: View {
   @EnvironmentObject var model: HelmModel
   @State private var emojiOpen = false
@@ -45,6 +84,12 @@ struct HelmCompose: View {
           .padding(.horizontal, 16)
         }
       }
+      if model.voiceBar {
+        HelmHoldBar(colors: colors)
+          .padding(.horizontal, 12)
+          .padding(.vertical, 8)
+          .background(Color(rgb: colors.panel))
+      } else {
       HStack(alignment: .bottom, spacing: 8) {
         Menu {
           Button("Photo") { picking = true }
@@ -94,7 +139,8 @@ struct HelmCompose: View {
       .padding(.horizontal, 12)
       .padding(.vertical, 8)
       .background(Color(rgb: colors.panel))
-      if emojiOpen {
+      }
+      if emojiOpen && !model.voiceBar {
         emojiPad(colors)
       }
     }

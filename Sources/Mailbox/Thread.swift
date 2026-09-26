@@ -68,6 +68,7 @@ public func advanceCursor(_ current: ThreadCursor, id: String? = nil, seq: Int? 
  */
 public func movesCursor(_ kind: String?) -> Bool {
   kind != "ack" && kind != "error" && kind != "face" && kind != "backdrop" && kind != "theme"
+    && kind != "react" && kind != "aims"
 }
 
 /**

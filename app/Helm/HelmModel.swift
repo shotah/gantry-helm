@@ -22,6 +22,7 @@ final class HelmModel: ObservableObject {
   private let notify = HelmNotifyDelegate()
   private let location = HelmLocation()
   private let net = HelmNet()
+  private let voice = HelmVoice()
   private var sweepTimer: Timer?
   private(set) var sampleShown = false
 
@@ -45,6 +46,14 @@ final class HelmModel: ObservableObject {
   @Published var resumed = true
   @Published var carAttached = false
   @Published var carThreadVisible = false
+  @Published var aims = AimsBoard()
+  @Published var aimsSeen: [String: String] = [:]
+  @Published var showGoals = false
+  @Published var voiceOn = false
+  @Published var voiceOffered = false
+  @Published var langId = defaultLang
+  @Published var speakPhase: SpeakPhase = .idle
+  @Published var hold = HoldState.idle
   @Published var lines: [ChatLine] = []
   @Published var up = false
   @Published var hint = ""
@@ -83,6 +92,10 @@ final class HelmModel: ObservableObject {
     backdropOn = prefs.backdrop
     followTheme = prefs.followTheme
     gpsOn = prefs.gps
+    aimsSeen = parseSeenAims(prefs.aimsSeen)
+    voiceOn = prefs.voice
+    voiceOffered = prefs.voiceOffered
+    langId = prefs.lang
     webClientId = HelmConfig.googleWebClientId
     googleReady = !HelmConfig.googleWebClientId.trimmingCharacters(in: .whitespaces).isEmpty
     cache = ThreadCache(file: HelmPrefs.threadFile)
@@ -113,7 +126,17 @@ final class HelmModel: ObservableObject {
       }
     }
     net.start()
+    bindVoice()
+    refreshVoice()
     startSweep()
+  }
+
+  var goalsChanged: Int {
+    changedAims(aims, seen: aimsSeen)
+  }
+
+  var voiceBar: Bool {
+    voiceBarShown(offered: voiceOffered, on: voiceOn)
   }
 
   func applySample(_ id: String) {
@@ -213,6 +236,8 @@ final class HelmModel: ObservableObject {
             if up {
               self?.mouth.setHint("Live")
               self?.flushOutbox()
+              self?.sendSeenIfWatching()
+              self?.refreshVoice()
             } else {
               self?.mouth.setHint("Offline")
             }
@@ -229,14 +254,14 @@ final class HelmModel: ObservableObject {
     refreshLook()
   }
 
-  func sendText() {
+  func sendText(spoken: Bool = false) {
     persistFields()
     let photo = stagedPhoto
     guard composeHasTurn(text: compose, photo: photo) else {
       return
     }
     let id = UUID().uuidString
-    let ctx = currentContext(geo: gpsOn ? prefs.lastGeo : nil)
+    let ctx = currentContext(geo: gpsOn ? prefs.lastGeo : nil, spoken: spoken)
     let frame = inbound(compose, id: id, context: ctx, images: photo.map { [$0] })
     mouth.add(
       ChatLine(
@@ -275,9 +300,91 @@ final class HelmModel: ObservableObject {
     publish()
   }
 
+  func setResumed(_ on: Bool) {
+    resumed = on
+    if on {
+      HelmNotify.dismissKit()
+      sendSeenIfWatching()
+    }
+  }
+
+  func sendSeenIfWatching() {
+    guard watchingThread(phoneResumed: resumed, carThreadVisible: carThreadVisible) else {
+      return
+    }
+    _ = socket?.send(ackSeen())
+  }
+
+  func react(id: String, emoji: String) {
+    guard socket?.send(reactFrame(id: id, text: emoji)) == true else {
+      return
+    }
+    mouth.applyReaction(id: id, text: emoji)
+    publish()
+  }
+
+  func askGoal(_ text: String) {
+    showGoals = false
+    compose = text
+    sendText()
+  }
+
+  func markAimsSeen() {
+    let seen = seenAims(mouth.aims)
+    aimsSeen = seen
+    prefs.aimsSeen = encodeSeenAims(seen)
+  }
+
+  func toggleVoice() {
+    voiceOn.toggle()
+    prefs.voice = voiceOn
+    if !voiceOn {
+      voice.hush()
+      speakPhase = .idle
+      hold = .idle
+    }
+  }
+
+  func setLang(_ id: String) {
+    langId = parseLang(id)
+    prefs.lang = langId
+  }
+
+  func voiceDown() {
+    voice.hush()
+    speakPhase = .idle
+    hold = .listening
+    voice.begin(lang: langId)
+  }
+
+  func voiceUp() {
+    hold = .finishing
+    voice.finish()
+  }
+
+  func voiceCancel() {
+    hold = .idle
+    voice.abort()
+  }
+
   func ingest(_ frame: WireFrame) {
     seen.note(frame: frame)
     let painted = mouth.ingest(frame)
+    voice.heard(
+      frame: frame,
+      fresh: painted,
+      origin: origin,
+      bearer: bearer,
+      lang: langId
+    )
+    if dismissKitOnFrame(kind: frame.kind, replay: frame.replay, fresh: painted, seen: frame.seen) {
+      HelmNotify.dismissKit()
+    }
+    if painted && shouldSpeak(frame.kind, replay: frame.replay)
+      && watchingThread(phoneResumed: resumed, carThreadVisible: carThreadVisible),
+      let id = frame.id {
+      _ = socket?.send(ackSeen(id))
+    }
     if let body = kitNoticeBody(
       painted: painted,
       kind: frame.kind,
@@ -373,14 +480,15 @@ final class HelmModel: ObservableObject {
     publish()
   }
 
-  func currentContext(geo: Geo?) -> PhoneContext {
+  func currentContext(geo: Geo?, spoken: Bool = false) -> PhoneContext {
     PhoneContext(
       at: ISO8601DateFormatter().string(from: Date()),
       tz: TimeZone.current.identifier,
       geo: geo,
       battery: peekBattery(),
       net: peekNet(),
-      surface: surfaceHint(carAttached: carAttached)
+      surface: surfaceHint(carAttached: carAttached),
+      input: inputHint(spoken: spoken)
     )
   }
 
@@ -467,7 +575,58 @@ final class HelmModel: ObservableObject {
     avatarRev = mouth.avatarRev
     backdropRev = mouth.backdropRev
     typingUntil = mouth.typingUntil
+    aims = mouth.aims
     objectWillChange.send()
+  }
+
+  private func bindVoice() {
+    voice.onWords = { [weak self] words in
+      Task { @MainActor in
+        guard let self else {
+          return
+        }
+        self.hold = .idle
+        let text = words.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard composeHasTurn(text: text, photo: self.stagedPhoto) else {
+          return
+        }
+        self.voice.arm()
+        self.compose = text
+        self.sendText(spoken: true)
+      }
+    }
+    voice.onPhase = { [weak self] phase in
+      Task { @MainActor in
+        self?.speakPhase = phase
+      }
+    }
+    voice.onFail = { [weak self] why in
+      Task { @MainActor in
+        self?.mouth.setHint(why)
+        self?.publish()
+      }
+    }
+    voice.onBlocked = { [weak self] in
+      Task { @MainActor in
+        self?.hold = .blocked
+      }
+    }
+  }
+
+  private func refreshVoice() {
+    let origin = self.origin
+    guard !origin.trimmingCharacters(in: .whitespaces).isEmpty else {
+      return
+    }
+    DispatchQueue.global(qos: .utility).async {
+      guard let offered = try? AuthApi(transport: URLSessionTransport()).config(origin: origin).voice else {
+        return
+      }
+      DispatchQueue.main.async {
+        self.voiceOffered = offered
+        self.prefs.voiceOffered = offered
+      }
+    }
   }
 }
 

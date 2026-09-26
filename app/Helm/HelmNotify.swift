@@ -70,6 +70,14 @@ enum HelmNotify {
     )
     UNUserNotificationCenter.current().add(req)
   }
+
+  static func dismissKit() {
+    let center = UNUserNotificationCenter.current()
+    center.getDeliveredNotifications { notes in
+      let ids = notes.filter { $0.request.content.threadIdentifier == thread }.map(\.request.identifier)
+      center.removeDeliveredNotifications(withIdentifiers: ids)
+    }
+  }
 }
 
 final class HelmNotifyDelegate: NSObject, UNUserNotificationCenterDelegate {

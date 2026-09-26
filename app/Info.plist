@@ -36,6 +36,10 @@
   <string>Helm sends a JPEG of what you photograph, with your caption, as one inbound.</string>
   <key>NSPhotoLibraryUsageDescription</key>
   <string>Helm sends a JPEG from your library, with your caption, as one inbound.</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Helm listens while you hold the mic so Kit can hear a spoken turn.</string>
+  <key>NSSpeechRecognitionUsageDescription</key>
+  <string>Helm turns what you say into the message Kit reads. The words stay on this phone until you send.</string>
   <key>NSUserNotificationsUsageDescription</key>
   <string>Kit’s replies arrive as a message card. CarPlay reads them aloud.</string>
   <key>HelmMailboxOrigin</key>

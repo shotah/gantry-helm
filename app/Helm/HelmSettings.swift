@@ -82,6 +82,20 @@ struct HelmSettings: View {
         )
         .font(.caption)
         .foregroundStyle(Color(rgb: colors.dim))
+        if model.voiceOffered {
+          Text("Language").font(.caption).foregroundStyle(Color(rgb: colors.muted))
+          ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+              ForEach(langIds, id: \.self) { id in
+                chip(langLabel(id), on: id == model.langId) { model.setLang(id) }
+              }
+            }
+          }
+          .accessibilityLabel("language")
+          Text("What hold-to-talk hears, and the language Kit speaks back.")
+            .font(.caption)
+            .foregroundStyle(Color(rgb: colors.dim))
+        }
         Text("Theme").font(.caption).foregroundStyle(Color(rgb: colors.muted))
         ScrollView(.horizontal, showsIndicators: false) {
           HStack {

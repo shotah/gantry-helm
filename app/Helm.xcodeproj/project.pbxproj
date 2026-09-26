@@ -19,6 +19,8 @@
 		A1000000000000000000000C /* HelmKeychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelmKeychain.swift; sourceTree = "<group>"; };
 		A1000000000000000000000D /* HelmLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelmLocation.swift; sourceTree = "<group>"; };
 		A1000000000000000000000E /* HelmCar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelmCar.swift; sourceTree = "<group>"; };
+		A1000000000000000000000F /* HelmGoals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelmGoals.swift; sourceTree = "<group>"; };
+		A10000000000000000000012 /* HelmVoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelmVoice.swift; sourceTree = "<group>"; };
 		A10000000000000000000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A10000000000000000000011 /* Helm.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Helm.xcconfig; sourceTree = "<group>"; };
 		A10000000000000000000020 /* Helm.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Helm.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -36,6 +38,8 @@
 		A2000000000000000000000C /* HelmKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000C /* HelmKeychain.swift */; };
 		A2000000000000000000000D /* HelmLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000D /* HelmLocation.swift */; };
 		A2000000000000000000000E /* HelmCar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000E /* HelmCar.swift */; };
+		A2000000000000000000000F /* HelmGoals.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000F /* HelmGoals.swift */; };
+		A20000000000000000000012 /* HelmVoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* HelmVoice.swift */; };
 		A20000000000000000000030 /* Mailbox in Frameworks */ = {isa = PBXBuildFile; productRef = A30000000000000000000002 /* Mailbox */; };
 		A20000000000000000000031 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = A30000000000000000000004 /* GoogleSignIn */; };
 		A40000000000000000000001 /* Helm */ = {
@@ -55,6 +59,8 @@
 				A1000000000000000000000C /* HelmKeychain.swift */,
 				A1000000000000000000000D /* HelmLocation.swift */,
 				A1000000000000000000000E /* HelmCar.swift */,
+				A1000000000000000000000F /* HelmGoals.swift */,
+				A10000000000000000000012 /* HelmVoice.swift */,
 			);
 			path = Helm;
 			sourceTree = "<group>";
@@ -104,6 +110,8 @@
 				A2000000000000000000000C /* HelmKeychain.swift in Sources */,
 				A2000000000000000000000D /* HelmLocation.swift in Sources */,
 				A2000000000000000000000E /* HelmCar.swift in Sources */,
+				A2000000000000000000000F /* HelmGoals.swift in Sources */,
+				A20000000000000000000012 /* HelmVoice.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

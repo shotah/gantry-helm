@@ -1,4 +1,5 @@
 import Foundation
+import CoreFoundation
 
 public struct Geo: Equatable {
   public var lat: Double
@@ -42,6 +43,8 @@ public struct PhoneContext: Equatable {
   public var battery: BatteryHint?
   public var net: String?
   public var surface: String?
+  /// `spoken` when the turn came from hold-to-talk or the car. Typed stays nil.
+  public var input: String?
 
   public init(
     at: String? = nil,
@@ -49,7 +52,8 @@ public struct PhoneContext: Equatable {
     geo: Geo? = nil,
     battery: BatteryHint? = nil,
     net: String? = nil,
-    surface: String? = nil
+    surface: String? = nil,
+    input: String? = nil
   ) {
     self.at = at
     self.tz = tz
@@ -57,6 +61,7 @@ public struct PhoneContext: Equatable {
     self.battery = battery
     self.net = net
     self.surface = surface
+    self.input = input
   }
 }
 
@@ -75,6 +80,10 @@ public struct WireFrame: Equatable {
   public var rev: Int?
   /// Theme notice only. Empty = cleared.
   public var theme: String?
+  /// Phone `ack` only. JSON `true` means this mouth is looking. Missing is delivery.
+  public var seen: Bool?
+  /// `aims` notice only. Whole board; an empty board is a real clear.
+  public var aims: AimsBoard?
 
   public init(
     kind: String? = nil,
@@ -88,7 +97,9 @@ public struct WireFrame: Equatable {
     at: Int64? = nil,
     replay: Bool = false,
     rev: Int? = nil,
-    theme: String? = nil
+    theme: String? = nil,
+    seen: Bool? = nil,
+    aims: AimsBoard? = nil
   ) {
     self.kind = kind
     self.text = text
@@ -102,6 +113,8 @@ public struct WireFrame: Equatable {
     self.replay = replay
     self.rev = rev
     self.theme = theme
+    self.seen = seen
+    self.aims = aims
   }
 }
 
@@ -158,9 +171,15 @@ public func encodeFrame(_ frame: WireFrame) -> String {
     if let surface = surfaceOnWire(ctx.surface) {
       c["surface"] = surface
     }
+    if let input = inputOnWire(ctx.input) {
+      c["input"] = input
+    }
     if !c.isEmpty {
       o["context"] = c
     }
+  }
+  if frame.seen == true {
+    o["seen"] = true
   }
   return JSON.stringify(o)
 }
@@ -202,7 +221,9 @@ public func parseFrame(_ raw: String) -> WireFrame? {
       themePresent: JSON.has(o, "theme"),
       themeNull: JSON.isNull(o, "theme"),
       themeRaw: o["theme"] as? String
-    )
+    ),
+    seen: parseSeen(o["seen"]),
+    aims: kind == "aims" ? parseAims(o) : nil
   )
 }
 
@@ -226,8 +247,37 @@ public func pinFrame(_ context: PhoneContext) -> WireFrame {
   WireFrame(kind: "pin", context: context)
 }
 
-public func ackSince(_ since: String) -> WireFrame {
-  WireFrame(kind: "ack", since: since)
+public func ackSince(_ since: String, seen: Bool = false) -> WireFrame {
+  WireFrame(kind: "ack", since: since, seen: seen ? true : nil)
+}
+
+/// Read on this mouth. Bare (no cursor) or per live `reply` / `push` id.
+public func ackSeen(_ id: String? = nil) -> WireFrame {
+  WireFrame(kind: "ack", id: id, seen: true)
+}
+
+/// JSON `true` only. `false`, missing, and junk are delivery, not reading.
+public func parseSeen(_ raw: Any?) -> Bool? {
+  if let n = raw as? NSNumber, CFGetTypeID(n) == CFBooleanGetTypeID() {
+    return n.boolValue ? true : nil
+  }
+  if let b = raw as? Bool {
+    return b ? true : nil
+  }
+  return nil
+}
+
+/// Sibling inbound, or a `seen` ack from another mouth. A replay inbound is not "just typed".
+public func dismissKitOnFrame(kind: String?, replay: Bool, fresh: Bool, seen: Bool?) -> Bool {
+  (fresh && kind == "inbound" && !replay) || (kind == "ack" && seen == true)
+}
+
+public func inputOnWire(_ input: String?) -> String? {
+  input == "spoken" ? "spoken" : nil
+}
+
+public func inputHint(spoken: Bool) -> String? {
+  spoken ? "spoken" : nil
 }
 
 /// Mailbox sequence; 1-based. Ignore junk so an old client cannot poison a frame.

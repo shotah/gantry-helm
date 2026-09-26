@@ -36,7 +36,7 @@ make test-scripts
 ```
 
 That is `semver`, `coverage-badge`, `release`, `hooks`, `helm-bake`,
-`helm-carplay`, `helm-glue`. `helm-bake` refuses a real Worker host
+`helm-carplay`, `helm-glue`, `helm-parity`. `helm-bake` refuses a real Worker host
 or a Google client id in the public tree. `make bake` writes
 gitignored `app/Helm.local.xcconfig` from `.env` (Nora / Simulator
 Google + origin). `helm-glue` locks scenePhase, typing caption,
