@@ -135,7 +135,7 @@ then Helm `POST`s `{ id_token, nonce }` to
    Info.plist. The Web id in `.env` is fine. If Google succeeds but
    the bar stays **Offline**, that is the mailbox socket, not OAuth.
 
-`GET /api/auth/nonce` first; mint locally on 404 / junk / empty. Close
+`GET /api/auth/nonce` first. A failed GET stops sign-in. Close
 `4401` / handshake 401 drops the JWE; 403 does not.
 
 Sign in with Apple is a **mailbox** change (pendant `security.md`). Do
