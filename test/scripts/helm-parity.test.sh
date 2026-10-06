@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Aims, reactions, seen-on-ack, and pocket voice stay wired. Device act does not.
+# Aims, tasks, reactions, seen-on-ack, pocket voice, and stored nonces stay wired.
+# Device act does not.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -43,6 +44,34 @@ grep -q 'langIds' "$settings" || {
   echo "FAIL: Settings language must use langIds" >&2
   exit 1
 }
+grep -q 'kind == "todo"' "$root/Sources/Mailbox/Mouth.swift" || {
+  echo "FAIL: Mouth must ingest todo before the bubble path" >&2
+  exit 1
+}
+grep -q 'kind != "todo"' "$root/Sources/Mailbox/Thread.swift" || {
+  echo "FAIL: todo must not move the cursor" >&2
+  exit 1
+}
+grep -q 'tasksLabel' "$screen" || {
+  echo "FAIL: header must use tasksLabel" >&2
+  exit 1
+}
+grep -q 'todoSeen' "$root/app/Helm/HelmPrefs.swift" || {
+  echo "FAIL: todoSeen must persist on the helm defaults" >&2
+  exit 1
+}
+grep -q 'tickTask' "$model" || {
+  echo "FAIL: a checkbox must send without closing the sheet" >&2
+  exit 1
+}
+grep -q 'GoogleNeedNonce' "$root/app/Helm/HelmGoogle.swift" || {
+  echo "FAIL: a failed nonce GET must stop sign-in" >&2
+  exit 1
+}
+if grep -q 'mintNonce' "$root/Sources/Mailbox/Auth.swift" "$root/app/Helm/HelmGoogle.swift"; then
+  echo "FAIL: do not mint a nonce when GET /api/auth/nonce fails" >&2
+  exit 1
+fi
 grep -q 'NSSpeechRecognitionUsageDescription' "$root/app/Info.plist" || {
   echo "FAIL: Info.plist must explain speech recognition" >&2
   exit 1

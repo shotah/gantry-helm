@@ -90,6 +90,7 @@ public final class Mouth {
   public private(set) var faceHint = ""
   public private(set) var typingUntil: Int64 = 0
   public private(set) var aims = AimsBoard()
+  public private(set) var todo: [TodoRow] = []
   private let now: () -> Int64
 
   public init(now: @escaping () -> Int64 = { Int64(Date().timeIntervalSince1970 * 1000) }) {
@@ -137,6 +138,7 @@ public final class Mouth {
     backdropRev = 0
     roomTheme = ""
     aims = AimsBoard()
+    todo = []
   }
 
   /// Another room (or human) is coming up; its transcript replays on connect.
@@ -189,6 +191,12 @@ public final class Mouth {
     if frame.kind == "aims" {
       if let board = frame.aims {
         aims = board
+      }
+      return false
+    }
+    if frame.kind == "todo" {
+      if let rows = frame.todo {
+        todo = rows
       }
       return false
     }

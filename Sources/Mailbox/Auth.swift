@@ -68,18 +68,6 @@ public struct AuthError: Error, Equatable {
   }
 }
 
-/// Server-issued native nonce when GET `/api/auth/nonce` is missing or junk.
-public func mintNonce() -> String {
-  var bytes = [UInt8](repeating: 0, count: 24)
-  for i in 0..<24 {
-    bytes[i] = UInt8.random(in: 0...255)
-  }
-  return Data(bytes).base64EncodedString()
-    .replacingOccurrences(of: "+", with: "-")
-    .replacingOccurrences(of: "/", with: "_")
-    .replacingOccurrences(of: "=", with: "")
-}
-
 public func parseAuthConfig(_ raw: String) -> AuthConfig {
   guard let o = JSON.object(raw) else {
     return AuthConfig(mode: nil, google: false)
@@ -131,8 +119,8 @@ public final class AuthApi {
     return parseAuthConfig(body)
   }
 
-  /// Server-issued native nonce when the Worker has `GET /api/auth/nonce`.
-  /// Missing route, junk body, or empty value → nil so the phone can mint.
+  /// Server-issued native nonce. Missing route, junk body, or empty value → nil.
+  /// The phone stops sign-in; a locally minted nonce is not accepted.
   public func nonce(origin: String) -> String? {
     do {
       let body = try get(httpOrigin(origin) + "/api/auth/nonce")

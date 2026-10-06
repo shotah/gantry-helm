@@ -70,6 +70,25 @@ struct HelmScreen: View {
             }
             .accessibilityLabel(model.voiceOn ? "Voice on" : "Voice")
           }
+          if !model.todo.isEmpty {
+            Button {
+              model.showTasks = true
+            } label: {
+              Image(systemName: "checkmark.square")
+                .foregroundStyle(Color(rgb: colors.fg))
+                .overlay(alignment: .topTrailing) {
+                  if model.tasksChanged > 0 {
+                    Text("\(model.tasksChanged)")
+                      .font(.caption2)
+                      .padding(3)
+                      .background(Color(rgb: colors.accent))
+                      .clipShape(Circle())
+                      .offset(x: 8, y: -8)
+                  }
+                }
+            }
+            .accessibilityLabel(tasksLabel(model.tasksChanged))
+          }
           if !model.aims.isEmpty {
             Button {
               model.showGoals = true
@@ -116,6 +135,17 @@ struct HelmScreen: View {
         model.connect()
       }
     }
+    .sheet(
+      isPresented: $model.showTasks,
+      onDismiss: {
+        model.markTodoSeen()
+      },
+      content: {
+        HelmTasks()
+          .environmentObject(model)
+          .onAppear { model.markTodoSeen() }
+      }
+    )
   }
 
   private func statusLine(now: Date) -> String {

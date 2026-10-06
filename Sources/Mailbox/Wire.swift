@@ -84,6 +84,8 @@ public struct WireFrame: Equatable {
   public var seen: Bool?
   /// `aims` notice only. Whole board; an empty board is a real clear.
   public var aims: AimsBoard?
+  /// `todo` notice only. Whole list, oldest first; empty is a real clear.
+  public var todo: [TodoRow]?
 
   public init(
     kind: String? = nil,
@@ -99,7 +101,8 @@ public struct WireFrame: Equatable {
     rev: Int? = nil,
     theme: String? = nil,
     seen: Bool? = nil,
-    aims: AimsBoard? = nil
+    aims: AimsBoard? = nil,
+    todo: [TodoRow]? = nil
   ) {
     self.kind = kind
     self.text = text
@@ -115,6 +118,7 @@ public struct WireFrame: Equatable {
     self.theme = theme
     self.seen = seen
     self.aims = aims
+    self.todo = todo
   }
 }
 
@@ -223,7 +227,8 @@ public func parseFrame(_ raw: String) -> WireFrame? {
       themeRaw: o["theme"] as? String
     ),
     seen: parseSeen(o["seen"]),
-    aims: kind == "aims" ? parseAims(o) : nil
+    aims: kind == "aims" ? parseAims(o) : nil,
+    todo: kind == "todo" ? parseTodo(o) : nil
   )
 }
 

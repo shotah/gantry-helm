@@ -77,7 +77,7 @@ kind.
 | Call | What |
 | --- | --- |
 | `GET /api/auth/config` | spike vs Google. Additive `version` / `dev` are dropped. |
-| `GET /api/auth/nonce` | Server nonce; junk / 404 → `mintNonce()` |
+| `GET /api/auth/nonce` | Server nonce. A failed GET stops sign-in |
 | `POST /api/auth/token` | `{ id_token, nonce }` → session JWE |
 | `GET /api/auth/me` | `Authorization: Bearer <jwe>` → `{ sub, email, cranes }` |
 | `GET /ws/<slug>?role=phone` | WebSocket. Header is the JWE (Google) or the spike secret |

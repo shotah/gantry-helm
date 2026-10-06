@@ -132,14 +132,6 @@ final class AuthThemeJpegTests: XCTestCase {
     }
   }
 
-  func testMintNonceIsUrlSafe() {
-    let n = mintNonce()
-    XCTAssertFalse(n.contains("+"))
-    XCTAssertFalse(n.contains("/"))
-    XCTAssertFalse(n.contains("="))
-    XCTAssertTrue(n.count >= 20)
-  }
-
   func testRoomThemeFromStateReadsTheIdAndTreatsNullAsCleared() {
     XCTAssertEqual("tide", roomThemeFromState(#"{"theme":"tide","themes":[]}"#))
     XCTAssertEqual("", roomThemeFromState(#"{"theme":null}"#))

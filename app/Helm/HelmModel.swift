@@ -51,6 +51,9 @@ final class HelmModel: ObservableObject {
   @Published var aims = AimsBoard()
   @Published var aimsSeen: [String: String] = [:]
   @Published var showGoals = false
+  @Published var todo: [TodoRow] = []
+  @Published var todoSeen: [String: String] = [:]
+  @Published var showTasks = false
   @Published var voiceOn = false
   @Published var voiceOffered = false
   @Published var langId = defaultLang
@@ -95,6 +98,7 @@ final class HelmModel: ObservableObject {
     followTheme = prefs.followTheme
     gpsOn = prefs.gps
     aimsSeen = parseSeenAims(prefs.aimsSeen)
+    todoSeen = parseSeenTodo(prefs.todoSeen)
     voiceOn = prefs.voice
     voiceOffered = prefs.voiceOffered
     langId = prefs.lang
@@ -138,6 +142,10 @@ final class HelmModel: ObservableObject {
 
   var goalsChanged: Int {
     changedAims(aims, seen: aimsSeen)
+  }
+
+  var tasksChanged: Int {
+    changedTodo(todo, seen: todoSeen)
   }
 
   var voiceBar: Bool {
@@ -364,6 +372,28 @@ final class HelmModel: ObservableObject {
     let seen = seenAims(mouth.aims)
     aimsSeen = seen
     prefs.aimsSeen = encodeSeenAims(seen)
+  }
+
+  /// Checkbox. The sheet stays open so several rows can be ticked.
+  func tickTask(_ text: String) {
+    compose = text
+    sendText()
+  }
+
+  /// Add and "Full list" close the sheet so the answer is in view.
+  func askTask(_ text: String) {
+    showTasks = false
+    compose = text
+    sendText()
+  }
+
+  func markTodoSeen() {
+    let seen = seenTodo(mouth.todo)
+    if seen == todoSeen {
+      return
+    }
+    todoSeen = seen
+    prefs.todoSeen = encodeSeenTodo(seen)
   }
 
   func toggleVoice() {
@@ -610,6 +640,10 @@ final class HelmModel: ObservableObject {
     backdropRev = mouth.backdropRev
     typingUntil = mouth.typingUntil
     aims = mouth.aims
+    todo = mouth.todo
+    if todo.isEmpty {
+      showTasks = false
+    }
     objectWillChange.send()
   }
 

@@ -99,6 +99,12 @@ final class HelmPrefs {
     set { d.set(newValue, forKey: Keys.aimsSeen) }
   }
 
+  /// Slug → row of the list last opened. Badge counts changes, not tasks.
+  var todoSeen: String {
+    get { d.string(forKey: Keys.todoSeen) ?? "" }
+    set { d.set(newValue, forKey: Keys.todoSeen) }
+  }
+
   var lastGeo: Geo? {
     get {
       guard d.object(forKey: Keys.geoLat) != nil else {
@@ -203,5 +209,6 @@ final class HelmPrefs {
     static let voiceOffered = "voiceOffered"
     static let lang = "lang"
     static let aimsSeen = "aimsSeen"
+    static let todoSeen = "todoSeen"
   }
 }

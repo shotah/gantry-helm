@@ -68,7 +68,7 @@ public func advanceCursor(_ current: ThreadCursor, id: String? = nil, seq: Int? 
 /// names the frame the mailbox refused — neither is a place to resume from.
 public func movesCursor(_ kind: String?) -> Bool {
   kind != "ack" && kind != "error" && kind != "face" && kind != "backdrop" && kind != "theme"
-    && kind != "react" && kind != "aims"
+    && kind != "react" && kind != "aims" && kind != "todo"
 }
 
 /// Highest mailbox `seq` on a thread already on the device, for the first

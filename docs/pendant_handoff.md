@@ -41,9 +41,8 @@ These landed on the Worker. Helm matches Cab.
 ## Lockstep
 
 - [x] **Server-issued native nonce (Helm half).** `AuthApi.nonce()` GETs
-      `/api/auth/nonce`. 404 / junk / empty → `mintNonce()`. **Do not
-      require stored nonces until a Helm build that fetches them is the
-      sideload** (same rule as Cab).
+      `/api/auth/nonce`. 404 / junk / empty → nil. `HelmGoogle.signIn`
+      stops there and does not open Google.
 - [x] **4401 / handshake 401 drops the JWE.** Close `4401` and HTTP 401
       on upgrade stop retry, call `signOut()`, and hint "sign in again".
       HTTP **403** does **not** drop the session.

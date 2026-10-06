@@ -33,7 +33,10 @@ enum HelmGoogle {
         completion(.failure(GoogleNeedPresenter()))
         return
       }
-      let nonce = fetchNonce(origin: origin)
+      guard let nonce = fetchNonce(origin: origin) else {
+        completion(.failure(GoogleNeedNonce()))
+        return
+      }
       GIDSignIn.sharedInstance.configuration = GIDConfiguration(
         clientID: ios,
         serverClientID: webClientId
@@ -70,9 +73,8 @@ enum HelmGoogle {
     return try AuthApi(transport: http).token(origin: origin, idToken: idToken, nonce: nonce)
   }
 
-  static func fetchNonce(origin: String) -> String {
-    let http = URLSessionTransport()
-    return AuthApi(transport: http).nonce(origin: origin) ?? mintNonce()
+  static func fetchNonce(origin: String) -> String? {
+    AuthApi(transport: URLSessionTransport()).nonce(origin: origin)
   }
 
   static func fetchMe(origin: String, token: String) -> Me? {
@@ -102,6 +104,12 @@ struct GoogleNeedPackage: Error, LocalizedError {
 struct GoogleNeedClient: Error, LocalizedError {
   var errorDescription: String? {
     "This build has no iOS OAuth client. Bake HELM_GOOGLE_IOS_CLIENT_ID."
+  }
+}
+
+struct GoogleNeedNonce: Error, LocalizedError {
+  var errorDescription: String? {
+    "Could not start sign-in. Check the mailbox and try again."
   }
 }
 

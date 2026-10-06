@@ -21,7 +21,7 @@ letting another app read the thread are the failures that matter.
 
 - [x] **Wire Google Sign-In iOS.** `GoogleSignIn-iOS` 9.2 on the Xcode
       target. `GET /api/auth/nonce` then `GIDSignIn` with that nonce,
-      `POST /api/auth/token`. 404 nonce → `mintNonce()`. Tests for the
+      `POST /api/auth/token`. A failed GET stops sign-in. Tests for the
       exchange already live in `AuthThemeJpegTests`.
 - [x] **PhotosPicker + camera encode.** Drive `shrinkSteps` /
       `shrinkToFit` with ImageIO. Caption + JPEG one inbound. Attach
@@ -67,6 +67,11 @@ letting another app read the thread are the failures that matter.
 - [x] **Pocket voice.** Header mic when config says `voice`. Hold
       bar, `SFSpeechRecognizer` in the Language locale, `POST /api/tts`
       with `lang`. Settings → Language is the same four ids.
+- [x] **`todo` board.** Parse with the 100 / 240 caps. Not a turn.
+      Header check-square badges changes since the sheet was open
+      (`helm` / `todoSeen`), keyed by slug. Checkbox sends
+      `/todo done <id>` and stays open. Add and Full list close.
+      CarPlay shows nothing.
 
 Device `act` stays out until pendant routes `kind=helm`.
 

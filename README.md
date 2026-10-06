@@ -84,7 +84,7 @@ default.
 | Call | What |
 | --- | --- |
 | `GET /api/auth/config` | spike vs Google |
-| `GET /api/auth/nonce` | server nonce; mint locally on 404 / junk |
+| `GET /api/auth/nonce` | server nonce; a failed GET stops sign-in |
 | `POST /api/auth/token` | `{ id_token, nonce }` → session JWE |
 | `GET /api/auth/me` | `Authorization: Bearer <jwe>` → `{ sub, email, cranes }` |
 | `GET /ws/<slug>?role=phone` | WebSocket. Header is the JWE (Google) or the spike secret |
