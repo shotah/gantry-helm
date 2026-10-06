@@ -89,6 +89,34 @@ final class CarPlayTests: XCTestCase {
     XCTAssertEqual("kit.reply", kitReplyCategory)
     XCTAssertEqual("reply", kitReplyAction)
     XCTAssertEqual("kit", kitReplyThread)
-    XCTAssertEqual("Kit", kitReplyPreview)
+    XCTAssertEqual("%u new messages", kitReplyPreview)
+  }
+
+  func testProfileEntitlementsComeOutOfTheCmsWrappedPlist() {
+    let plist = """
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0"><dict>
+        <key>Name</key><string>iOS Team Provisioning Profile</string>
+        <key>Entitlements</key><dict>
+          <key>\(communicationEntitlement)</key><true/>
+          <key>\(timeSensitiveEntitlement)</key><false/>
+        </dict>
+      </dict></plist>
+      """
+    var profile = Data([0x30, 0x82, 0x1a, 0xff, 0x06, 0x09])
+    profile.append(Data(plist.utf8))
+    profile.append(Data([0x00, 0x31, 0x82, 0x02]))
+    let got = profileEntitlements(profile)
+    XCTAssertTrue(entitled(got, communicationEntitlement))
+    XCTAssertFalse(entitled(got, timeSensitiveEntitlement))
+    XCTAssertFalse(entitled(got, "com.apple.developer.nope"))
+  }
+
+  func testNoProfileMeansNoEntitlements() {
+    XCTAssertTrue(profileEntitlements(nil).isEmpty)
+    XCTAssertTrue(profileEntitlements(Data([0x30, 0x82])).isEmpty)
+    XCTAssertTrue(profileEntitlements(Data("<?xml version=\"1.0\"?><plist>".utf8)).isEmpty)
+    XCTAssertFalse(entitled([:], communicationEntitlement))
   }
 }

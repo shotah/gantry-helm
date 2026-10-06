@@ -11,22 +11,14 @@ struct HelmRoot: View {
 
   var body: some View {
     let colors = helmColors(model.paintedTheme)
-    GeometryReader { geo in
-      NavigationStack {
-        HelmScreen()
-          .navigationDestination(isPresented: $model.showSettings) {
-            HelmSettings()
-          }
-      }
-      .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
-    }
-    .ignoresSafeArea(.keyboard)
-    .background {
-      ScreenPin()
-        .allowsHitTesting(false)
+    NavigationStack {
+      HelmScreen()
+        .navigationDestination(isPresented: $model.showSettings) {
+          HelmSettings()
+        }
     }
     .tint(Color(rgb: colors.accent))
-    .onChange(of: scenePhase) { phase in
+    .onChange(of: scenePhase) { _, phase in
       model.setResumed(phase == .active)
     }
     .sheet(
@@ -52,7 +44,15 @@ struct HelmScreen: View {
     ZStack(alignment: .topLeading) {
       Color(rgb: colors.canvas).ignoresSafeArea()
       if model.backdropOn, let data = model.backdropJpeg, let img = helmImage(data) {
-        img.resizable().scaledToFill().opacity(0.35).ignoresSafeArea()
+        // Overlay + clip: a bare scaledToFill image reports its overflow as
+        // its size, grows the ZStack past the screen, and the parent centers
+        // it — pushing the header and compose bar off the edges, worst with a
+        // keyboard up or on an iPad whose aspect differs from the photo.
+        Color.clear
+          .overlay { img.resizable().scaledToFill() }
+          .clipped()
+          .opacity(0.35)
+          .ignoresSafeArea()
       }
       VStack(spacing: 0) {
         HStack(spacing: 0) {
@@ -114,7 +114,6 @@ struct HelmScreen: View {
         .offset(x: 8 + headerFaceNudgeX, y: headerFaceNudgeY)
         .zIndex(2)
     }
-    .modifier(KeyboardOverlap(cover: Color(rgb: colors.panel)))
     .onAppear {
       if !model.sampleShown {
         HelmNotify.setup()
@@ -196,132 +195,6 @@ struct KitFace: View {
       )
       .clipShape(Circle())
       .accessibilityLabel("Kit")
-  }
-}
-
-#if canImport(UIKit)
-  /// UIKit slides the hosting view up with the keyboard and can leave that
-  /// offset in place after dismiss. Put the full-width ancestors back.
-  private struct ScreenPin: UIViewRepresentable {
-    func makeUIView(context: Context) -> PinView { PinView() }
-
-    func updateUIView(_ uiView: PinView, context: Context) {
-      uiView.pin()
-    }
-
-    final class PinView: UIView {
-      private var token: NSObjectProtocol?
-      private var pinning = false
-
-      override init(frame: CGRect) {
-        super.init(frame: frame)
-        isUserInteractionEnabled = false
-        backgroundColor = .clear
-        token = NotificationCenter.default.addObserver(
-          forName: UIResponder.keyboardWillChangeFrameNotification,
-          object: nil,
-          queue: .main
-        ) { [weak self] _ in
-          self?.pin()
-        }
-      }
-
-      required init?(coder: NSCoder) {
-        nil
-      }
-
-      deinit {
-        if let token {
-          NotificationCenter.default.removeObserver(token)
-        }
-      }
-
-      override func didMoveToWindow() {
-        super.didMoveToWindow()
-        pin()
-      }
-
-      override func layoutSubviews() {
-        super.layoutSubviews()
-        pin()
-      }
-
-      func pin() {
-        guard let window, let root = window.rootViewController?.view, !pinning else {
-          return
-        }
-        pinning = true
-        defer { pinning = false }
-        straighten(root, window: window)
-      }
-
-      private func straighten(_ view: UIView, window: UIWindow) {
-        if view.transform != .identity {
-          view.transform = .identity
-        }
-        let size = view.bounds.size
-        let fullWidth = abs(size.width - window.bounds.width) < 2
-        let tall = size.height > window.bounds.height * 0.45
-        if fullWidth && tall, let host = view.superview {
-          let origin = host.convert(view.frame.origin, to: window)
-          if origin.y < -1 {
-            var frame = view.frame
-            frame.origin.y -= origin.y
-            frame.origin.x = 0
-            view.frame = frame
-            if let scroll = view as? UIScrollView, scroll.contentOffset.y > 1 {
-              scroll.contentOffset = .zero
-            }
-          }
-        }
-        for child in view.subviews {
-          straighten(child, window: window)
-        }
-      }
-    }
-  }
-#endif
-
-struct KeyboardOverlap: ViewModifier {
-  var cover: Color
-  @State private var lift: CGFloat = 0
-
-  func body(content: Content) -> some View {
-    content
-      .padding(.bottom, lift)
-      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-      .background(alignment: .bottom) {
-        cover.frame(maxWidth: .infinity).frame(height: lift)
-      }
-      .onReceive(
-        NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)
-      ) { note in
-        let next = Self.lift(for: note)
-        guard next != lift else {
-          return
-        }
-        let duration =
-          note.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double ?? 0.25
-        withAnimation(.easeOut(duration: duration)) {
-          lift = next
-        }
-      }
-  }
-
-  private static func lift(for note: Notification) -> CGFloat {
-    #if canImport(UIKit)
-      guard let end = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
-        return 0
-      }
-      let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first {
-        $0.activationState == .foregroundActive
-      }
-      let bottom = scene?.screen.bounds.maxY ?? end.maxY
-      let home = scene?.keyWindow?.safeAreaInsets.bottom ?? 0
-      return max(0, bottom - end.minY - home)
-    #else
-      return 0
-    #endif
   }
 }
 
@@ -412,18 +285,52 @@ struct HelmChat: View {
         if let failed = line.failed {
           Text(failed).font(.caption2).foregroundStyle(Color(rgb: colors.danger))
         }
+        if model.reactingId == line.id {
+          reactionStrip(line, colors: colors)
+        }
       }
       if !line.fromYou { Spacer(minLength: 48) }
     }
-    .contextMenu {
+    .contentShape(Rectangle())
+    // A tap handler ahead of the long press keeps the scroll view scrolling.
+    .onTapGesture {
+      model.reactingId = nil
+    }
+    .onLongPressGesture {
       if canReact(fromYou: line.fromYou, kind: line.kind, id: line.id) {
-        ForEach(reactionPalette, id: \.self) { emoji in
-          Button(emoji) {
-            model.react(id: line.id, emoji: toggleReaction(line.reaction, emoji))
-          }
-        }
+        model.reactingId = line.id
       }
     }
   }
 
+  /// Inline picker, no context-menu lift: that preview snapshots the flipped
+  /// bubble and shows it upside down.
+  private func reactionStrip(_ line: ChatLine, colors: HelmColors) -> some View {
+    VStack(spacing: 4) {
+      ForEach(reactionRows(reactionPalette), id: \.self) { row in
+        HStack(spacing: 4) {
+          ForEach(row, id: \.self) { emoji in
+            Button {
+              model.react(id: line.id, emoji: toggleReaction(line.reaction, emoji))
+            } label: {
+              Text(emoji)
+                .font(.title2)
+                .frame(width: 40, height: 40)
+                .background(
+                  line.reaction == emoji ? Color(rgb: colors.accentSoft) : .clear
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("React \(emoji)")
+          }
+        }
+      }
+    }
+    .padding(6)
+    .background(Color(rgb: colors.panel))
+    .clipShape(RoundedRectangle(cornerRadius: 12))
+    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(rgb: colors.line), lineWidth: 1))
+    .accessibilityLabel("Reactions")
+  }
 }

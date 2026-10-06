@@ -4,6 +4,15 @@ import Foundation
 /// Not a turn: no phone queue, no cursor.
 public let reactionPalette = ["👍", "👎", "❤️", "🔥", "🤣", "😢", "🤔", "🙏", "👀", "🎉", "💯", "👏"]
 
+/// Emoji per palette row on the long-press menu. Two rows of six, like Tapback.
+public let reactionRowMax = 6
+
+public func reactionRows(_ palette: [String]) -> [[String]] {
+  stride(from: 0, to: palette.count, by: reactionRowMax).map {
+    Array(palette[$0..<min($0 + reactionRowMax, palette.count)])
+  }
+}
+
 public let reactionTextMax = 64
 
 public func parseReactionText(_ raw: String?) -> String? {

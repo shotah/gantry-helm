@@ -52,6 +52,7 @@ struct HelmCompose: View {
   @State private var emojiOpen = false
   @State private var picking = false
   @State private var camera = false
+  @FocusState private var composeFocused: Bool
   #if canImport(PhotosUI)
     @State private var picked: PhotosPickerItem?
   #endif
@@ -117,16 +118,19 @@ struct HelmCompose: View {
           Button {
             emojiOpen.toggle()
           } label: {
-            Text("☺︎").font(.title3)
+            Image(systemName: "face.smiling")
+              .foregroundStyle(Color(rgb: colors.fg))
+              .frame(width: 36, height: 36)
           }
           .accessibilityLabel("Emoji")
           TextField("Message", text: $model.compose, axis: .vertical)
             .lineLimit(1...6)
             .textFieldStyle(.plain)
+            .focused($composeFocused)
             .padding(8)
             .background(Color(rgb: colors.track))
             .clipShape(RoundedRectangle(cornerRadius: 10))
-            .onChange(of: model.compose) { new in
+            .onChange(of: model.compose) { _, new in
               let next = applyEmoji(new, cursor: (new as NSString).length, whenTo: "type")
               if next.text != new {
                 model.compose = next.text
@@ -160,6 +164,9 @@ struct HelmCompose: View {
       if model.showEmoji {
         emojiOpen = true
       }
+      if model.focusCompose {
+        composeFocused = true
+      }
     }
     .confirmationDialog("Attach", isPresented: $model.showAttach, titleVisibility: .visible) {
       Button("Photo") { picking = true }
@@ -170,7 +177,7 @@ struct HelmCompose: View {
     }
     #if canImport(PhotosUI)
       .photosPicker(isPresented: $picking, selection: $picked, matching: .images)
-      .onChange(of: picked) { item in
+      .onChange(of: picked) { _, item in
         guard let item else { return }
         Task {
           if let data = try? await item.loadTransferable(type: Data.self) {
@@ -190,17 +197,21 @@ struct HelmCompose: View {
     }
   }
 
+  /// Grid, a few rows tall, scrolls down. One long sideways strip hid most of it.
   private func emojiPad(_ colors: HelmColors) -> some View {
     let picks = searchEmoji("")
-    return ScrollView(.horizontal, showsIndicators: false) {
-      HStack {
+    return ScrollView(.vertical) {
+      LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: 4)], spacing: 4) {
         ForEach(picks, id: \.name) { e in
           Button(e.emoji) { model.compose += e.emoji }
             .font(.title2)
+            .frame(width: 44, height: 44)
+            .accessibilityLabel(e.name)
         }
       }
       .padding(8)
     }
+    .frame(height: 4 * 48 + 16)
     .background(Color(rgb: colors.track))
   }
 }

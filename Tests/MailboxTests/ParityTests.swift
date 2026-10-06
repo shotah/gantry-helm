@@ -74,6 +74,12 @@ final class ParityTests: XCTestCase {
     XCTAssertEqual("🔥", toggleReaction("👍", "🔥"))
     XCTAssertTrue(canReact(fromYou: false, kind: "reply", id: "r1"))
     XCTAssertFalse(canReact(fromYou: true, kind: "inbound", id: "r1"))
+    XCTAssertEqual(
+      [["👍", "👎", "❤️", "🔥", "🤣", "😢"], ["🤔", "🙏", "👀", "🎉", "💯", "👏"]],
+      reactionRows(reactionPalette))
+    XCTAssertEqual(
+      [["a", "b", "c", "d", "e", "f"], ["g"]], reactionRows(["a", "b", "c", "d", "e", "f", "g"]))
+    XCTAssertEqual([], reactionRows([]))
     XCTAssertFalse(movesCursor("react"))
     let raw = encodeFrame(reactFrame(id: "r1", text: "🔥"))
     XCTAssertTrue(raw.contains("react"))

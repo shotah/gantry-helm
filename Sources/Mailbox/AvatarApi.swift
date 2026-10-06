@@ -19,7 +19,10 @@ enum Fetched {
 
 /// Conditional GET for `/api/avatar` or `/api/backdrop`. A 304 or a failed
 /// request keeps the cached bytes; a 404 forgets them.
-public final class AvatarApi {
+///
+/// Immutable after init, so it may cross threads; `@unchecked` only because
+/// `HTTPTransport` does not declare `Sendable`.
+public final class AvatarApi: @unchecked Sendable {
   private let transport: HTTPTransport
   private let cache: BlobCache?
 

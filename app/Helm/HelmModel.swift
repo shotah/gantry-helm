@@ -43,6 +43,9 @@ final class HelmModel: ObservableObject {
   @Published var showSettings = false
   @Published var showEmoji = false
   @Published var showAttach = false
+  @Published var focusCompose = false
+  /// Line whose reaction strip is open. Long-press opens; a pick or tap closes.
+  @Published var reactingId: String?
   @Published var authHint = ""
   @Published var signingIn = false
   @Published var resumed = true
@@ -219,6 +222,10 @@ final class HelmModel: ObservableObject {
       showAttach = true
     case "draft":
       stagedPhoto = samplePhotoUrl
+    case "react":
+      reactingId = mouth.lines.last { !$0.fromYou }?.id
+    case "keyboard":
+      focusCompose = true
     default:
       break
     }
@@ -355,6 +362,7 @@ final class HelmModel: ObservableObject {
   }
 
   func react(id: String, emoji: String) {
+    reactingId = nil
     guard socket?.send(reactFrame(id: id, text: emoji)) == true else {
       return
     }

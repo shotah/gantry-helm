@@ -12,10 +12,6 @@ grep -q 'allowInCarPlay' "$notify" || {
   echo "FAIL: HelmNotify category must allow CarPlay" >&2
   exit 1
 }
-grep -q 'allowAnnouncement' "$notify" || {
-  echo "FAIL: HelmNotify category must allow announcement" >&2
-  exit 1
-}
 grep -q 'INSendMessageIntent' "$notify" || {
   echo "FAIL: HelmNotify must donate INSendMessageIntent" >&2
   exit 1

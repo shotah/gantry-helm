@@ -85,7 +85,7 @@ public struct AimEffect: Equatable {
   }
 }
 
-public struct AimLink: Equatable {
+public struct AimLink: Hashable {
   public var a: String
   public var b: String
   public var r: Double

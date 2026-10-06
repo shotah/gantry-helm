@@ -7,6 +7,14 @@ enum HelmNotify {
   static let category = kitReplyCategory
   static let thread = kitReplyThread
 
+  /// What this signature may claim. A free Personal Team gets a plain card.
+  private static let entitlements = profileEntitlements(
+    Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision")
+      .flatMap { try? Data(contentsOf: $0) }
+  )
+  static let communication = entitled(entitlements, communicationEntitlement)
+  static let timeSensitive = entitled(entitlements, timeSensitiveEntitlement)
+
   static func setup() {
     let reply = UNTextInputNotificationAction(
       identifier: kitReplyAction,
@@ -21,7 +29,7 @@ enum HelmNotify {
       // iOS 27 dropped INSendMessageIntent.intentIdentifier. Its value was the class name.
       intentIdentifiers: ["INSendMessageIntent"],
       hiddenPreviewsBodyPlaceholder: kitReplyPreview,
-      options: [.allowInCarPlay, .allowAnnouncement]
+      options: [.allowInCarPlay]
     )
     UNUserNotificationCenter.current().setNotificationCategories([cat])
     UNUserNotificationCenter.current().requestAuthorization(options: [
@@ -39,7 +47,20 @@ enum HelmNotify {
     content.categoryIdentifier = category
     content.threadIdentifier = thread
     content.sound = .default
-    content.interruptionLevel = .timeSensitive
+    content.interruptionLevel = timeSensitive ? .timeSensitive : .active
+    let req = UNNotificationRequest(
+      identifier: UUID().uuidString,
+      content: communication ? communicationCard(content, slug: slug, body: body) : content,
+      trigger: nil
+    )
+    UNUserNotificationCenter.current().add(req)
+  }
+
+  /// Avatar + CarPlay read-aloud. Only valid on a signature that carries
+  /// `communicationEntitlement`; iOS drops an unentitled card that claims it.
+  private static func communicationCard(
+    _ content: UNNotificationContent, slug: String, body: String
+  ) -> UNNotificationContent {
     let intent = INSendMessageIntent(
       recipients: [
         INPerson(
@@ -63,15 +84,10 @@ enum HelmNotify {
         image: nil,
         contactIdentifier: nil,
         customIdentifier: slug
-      )
+      ),
+      attachments: nil
     )
-    let delivered = (try? content.updating(from: intent)) ?? content
-    let req = UNNotificationRequest(
-      identifier: UUID().uuidString,
-      content: delivered,
-      trigger: nil
-    )
-    UNUserNotificationCenter.current().add(req)
+    return (try? content.updating(from: intent)) ?? content
   }
 
   static func dismissKit() {

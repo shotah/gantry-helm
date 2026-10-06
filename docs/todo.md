@@ -96,6 +96,42 @@ Device `act` stays out until pendant routes `kind=helm`.
       `docs/screens.md`, written to `assets/docs/`. No second
       painter. Car rows wait on the conversation screen.
 
+## Paid developer plan
+
+Blocked on Apple Developer Program enrollment. A free Personal Team
+cannot sign these capabilities, so Helm posts a plain card today.
+`HelmNotify` reads the entitlements out of `embedded.mobileprovision`
+and turns each path on by itself once the profile carries it.
+
+Enrollment facts, from [developer.apple.com/programs/enroll](https://developer.apple.com/programs/enroll/):
+
+- **US$99 per membership year**, local currency where available.
+  Auto-renewing subscription; cancel up to a day before renewal; the
+  current year is non-refundable.
+- **Individual is fine.** One Apple Account plus a government photo
+  ID, verified in the Apple Developer app on an iPhone or iPad. No
+  company, no D-U-N-S number.
+- **Not** the $299 Enterprise Program; that is MDM distribution.
+- Also fixes the seven-day profile in
+  [sideload_to_ios.md](sideload_to_ios.md): profiles last a year and
+  up to 100 devices per device type can stay installed.
+- The paid team is a new signing identity. Uninstall Helm from each
+  device before the first Run on it, as the sideload doc already says.
+
+- [ ] **Communication Notifications capability** on the Helm target.
+      Lights up the `INSendMessageIntent` card: Kit avatar, promoted
+      in Notification Center, CarPlay reads it aloud. Everything in
+      [carplay_setup.md](carplay_setup.md) past the plain banner waits
+      on this.
+- [ ] **Time Sensitive Notifications capability.** Kit's card breaks
+      through Focus (`.timeSensitive`). Until then it posts `.active`.
+- [ ] **Entitlements file** (`app/Helm/Helm.entitlements`,
+      `CODE_SIGN_ENTITLEMENTS` in `project.yml`) with both keys, plus
+      a `v*` release that still passes without them. Keep the free
+      sideload working: do not make signing fail on a Personal Team.
+- [ ] **Walk the driveway** in [carplay_setup.md §3](carplay_setup.md)
+      on the entitled build, then drop the "plain banner" row from §4.
+
 ## Watch — not a ticket
 
 - **No cookies.** `URLSessionConfiguration.httpShouldSetCookies = false`.

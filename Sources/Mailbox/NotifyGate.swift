@@ -33,7 +33,35 @@ public func carTestBlocked(notificationsEnabled: Bool, channelImportance: Int?) 
 public let kitReplyCategory = "kit.reply"
 public let kitReplyAction = "reply"
 public let kitReplyThread = "kit"
-public let kitReplyPreview = "Kit"
+/// Lock-screen body while previews are hidden. iOS fills in `%u`.
+public let kitReplyPreview = "%u new messages"
+
+/// Signing entitlements that let a card be a communication notification
+/// (avatar, CarPlay read-aloud) or break through Focus. Both are paid
+/// Apple Developer Program capabilities; a free Personal Team profile
+/// never carries them, and iOS drops a card that claims them anyway.
+public let communicationEntitlement = "com.apple.developer.usernotifications.communication"
+public let timeSensitiveEntitlement = "com.apple.developer.usernotifications.time-sensitive"
+
+/// `Entitlements` inside an `embedded.mobileprovision` — a CMS blob with
+/// the XML plist embedded as plain bytes. Missing profile (Simulator)
+/// or junk → empty.
+public func profileEntitlements(_ profile: Data?) -> [String: Any] {
+  guard let profile,
+    let open = profile.range(of: Data("<?xml".utf8)),
+    let close = profile.range(of: Data("</plist>".utf8), in: open.lowerBound..<profile.endIndex),
+    let plist = try? PropertyListSerialization.propertyList(
+      from: profile.subdata(in: open.lowerBound..<close.upperBound), format: nil)
+      as? [String: Any]
+  else {
+    return [:]
+  }
+  return plist["Entitlements"] as? [String: Any] ?? [:]
+}
+
+public func entitled(_ entitlements: [String: Any], _ key: String) -> Bool {
+  entitlements[key] as? Bool == true
+}
 /// `AVAudioSession.Port.carAudio.rawValue` — CarPlay / car Bluetooth.
 public let carAudioPort = "CarAudio"
 

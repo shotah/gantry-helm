@@ -71,6 +71,10 @@
 	<string>Helm sends a JPEG from your library, with your caption, as one inbound.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Helm turns what you say into the message Kit reads. The words stay on this phone until you send.</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>INSendMessageIntent</string>
+	</array>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>Kit’s replies arrive as a message card. CarPlay reads them aloud.</string>
 	<key>UILaunchScreen</key>
@@ -78,6 +82,13 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>

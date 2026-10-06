@@ -38,7 +38,7 @@ struct HelmSettings: View {
           TextField("kit", text: $model.slug)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
-            .onChange(of: model.slug) { model.slug = $0.lowercased() }
+            .onChange(of: model.slug) { _, new in model.slug = new.lowercased() }
         }
         Text("The crane’s room, usually kit. Not your name.")
           .font(.caption)
@@ -86,36 +86,23 @@ struct HelmSettings: View {
         .font(.caption)
         .foregroundStyle(Color(rgb: colors.dim))
         if model.voiceOffered {
-          Text("Language").font(.caption).foregroundStyle(Color(rgb: colors.muted))
-          ChipWrap {
-            ForEach(langIds, id: \.self) { id in
-              chip(langLabel(id), on: id == model.langId) { model.setLang(id) }
-            }
-          }
+          dropdown(
+            "Language", ids: langIds, label: langLabel,
+            selection: Binding(get: { model.langId }, set: { model.setLang($0) })
+          )
           .accessibilityLabel("language")
           Text("What hold-to-talk hears, and the language Kit speaks back.")
             .font(.caption)
             .foregroundStyle(Color(rgb: colors.dim))
         }
-        Text("Theme").font(.caption).foregroundStyle(Color(rgb: colors.muted))
-        ChipWrap {
-          ForEach(themeIds, id: \.self) { id in
-            chip(themeLabel(id), on: id == model.themeId) { model.pickTheme(id) }
-          }
-        }
+        dropdown(
+          "Theme", ids: themeIds, label: themeLabel,
+          selection: Binding(get: { model.themeId }, set: { model.pickTheme($0) })
+        )
         .accessibilityLabel("color theme")
-        Text("Font size").font(.caption).foregroundStyle(Color(rgb: colors.muted))
-        ChipWrap {
-          ForEach(fontIds, id: \.self) { id in
-            chip(fontLabel(id), on: id == model.fontId) { model.fontId = id }
-          }
-        }
-        Text("Photo size").font(.caption).foregroundStyle(Color(rgb: colors.muted))
-        ChipWrap {
-          ForEach(photoSizeIds, id: \.self) { id in
-            chip(photoSizeChip(id), on: id == model.photoSizeId) { model.photoSizeId = id }
-          }
-        }
+        dropdown("Font size", ids: fontIds, label: fontLabel, selection: $model.fontId)
+        dropdown(
+          "Photo size", ids: photoSizeIds, label: photoSizeChip, selection: $model.photoSizeId)
         Text("Smaller sends faster and costs fewer tokens to look at.")
           .font(.caption)
           .foregroundStyle(Color(rgb: colors.dim))
@@ -203,7 +190,6 @@ struct HelmSettings: View {
       .padding(.bottom, 32)
     }
     .scrollDismissesKeyboard(.interactively)
-    .modifier(KeyboardOverlap(cover: Color(rgb: colors.canvas)))
     .background(Color(rgb: colors.canvas))
     .navigationTitle("Settings")
     .onDisappear { model.persistFields() }
@@ -216,6 +202,24 @@ struct HelmSettings: View {
         .padding(8)
         .background(Color(rgb: helmColors(model.paintedTheme).track))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+  }
+
+  /// One-of-N as a menu. Chips wrapped into a sideways scroll on narrow screens.
+  private func dropdown(
+    _ title: String, ids: [String], label: @escaping (String) -> String,
+    selection: Binding<String>
+  ) -> some View {
+    labeled(title) {
+      Picker(title, selection: selection) {
+        ForEach(ids, id: \.self) { id in
+          Text(label(id)).tag(id)
+        }
+      }
+      .pickerStyle(.menu)
+      .labelsHidden()
+      .tint(Color(rgb: helmColors(model.paintedTheme).fg))
+      .frame(maxWidth: .infinity, alignment: .leading)
     }
   }
 

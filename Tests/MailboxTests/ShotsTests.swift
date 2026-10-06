@@ -17,11 +17,13 @@ final class ShotsTests: XCTestCase {
   }
 
   func testEveryShotUsesAKnownSampleAndTheme() {
-    XCTAssertEqual(12, docShots.count)
+    XCTAssertEqual(14, docShots.count)
     for shot in docShots {
       XCTAssertNotNil(sampleScene(shot.sample), shot.file)
       XCTAssertEqual(shot.theme, knownTheme(shot.theme) ?? "", shot.file)
-      XCTAssertTrue(["", "settings", "emoji", "attach", "draft"].contains(shot.open), shot.file)
+      XCTAssertTrue(
+        ["", "settings", "emoji", "attach", "draft", "react", "keyboard"].contains(shot.open),
+        shot.file)
     }
   }
 }

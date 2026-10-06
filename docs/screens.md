@@ -29,6 +29,8 @@ ignore a `sample` launch argument.
 | `phone-emoji` | `thread` | Emoji picker over compose. |
 | `phone-attach` | `thread` | Paperclip: photo, camera, commands, GPS, pin. |
 | `phone-draft` | `thread` | Staged photo on compose: thumbnail + Remove; Send carries caption + JPEG. |
+| `phone-react` | `thread` | Long-press on Kit's last line: inline reaction strip, two rows of six. |
+| `phone-keyboard` | `thread` | Compose focused, keyboard up. Header and thread stay put. |
 | `phone-thread-lamp` | `thread` | Same thread, Lamp. |
 | `phone-thread-paper` | `thread` | Same thread, Paper (daylight). |
 

@@ -30,7 +30,7 @@ struct HelmGoals: View {
       .navigationTitle("Goals")
       .navigationBarTitleDisplayMode(.inline)
     }
-    .onChange(of: model.aims) { _ in
+    .onChange(of: model.aims) {
       model.markAimsSeen()
     }
   }
@@ -104,14 +104,5 @@ struct HelmGoals: View {
       return colors.danger
     }
     return colors.muted
-  }
-}
-
-extension AimLink: Hashable {
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(a)
-    hasher.combine(b)
-    hasher.combine(r)
-    hasher.combine(n)
   }
 }

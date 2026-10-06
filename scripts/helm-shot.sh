@@ -64,6 +64,7 @@ xcodebuild \
   -destination "id=$udid" \
   -derivedDataPath "$root/DerivedData" \
   CODE_SIGNING_ALLOWED=NO \
+  ONLY_ACTIVE_ARCH=YES \
   build
 
 app="$(find "$root/DerivedData/Build/Products" -path '*iphonesimulator*' -name 'Helm.app' -type d | head -1)"

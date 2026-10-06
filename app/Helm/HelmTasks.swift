@@ -40,7 +40,7 @@ struct HelmTasks: View {
       .navigationBarTitleDisplayMode(.inline)
     }
     .onAppear { model.markTodoSeen() }
-    .onChange(of: model.todo) { _ in
+    .onChange(of: model.todo) {
       ticked = settleTicked()
       model.markTodoSeen()
     }

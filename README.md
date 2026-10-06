@@ -63,6 +63,30 @@ travel together), slash commands, GPS on send, drop a pin. Kit can
 pick the room's mood; you can unfollow and keep yours. Boom is the
 default.
 
+## Screens
+
+<p align="center">
+  <img src="assets/docs/phone-thread.png" alt="Ada and Kit thread, Boom" width="24%">
+  <img src="assets/docs/phone-thread-lamp.png" alt="Same thread, Lamp" width="24%">
+  <img src="assets/docs/phone-thread-paper.png" alt="Same thread, Paper" width="24%">
+  <img src="assets/docs/phone-stream.png" alt="Kit drafting, Live · typing" width="24%">
+</p>
+<p align="center">
+  <img src="assets/docs/phone-keyboard.png" alt="Compose focused, keyboard up" width="24%">
+  <img src="assets/docs/phone-react.png" alt="Long-press reaction strip on Kit's line" width="24%">
+  <img src="assets/docs/phone-emoji.png" alt="Emoji grid over compose" width="24%">
+  <img src="assets/docs/phone-attach.png" alt="Paperclip: photo, camera, commands, GPS, pin" width="24%">
+</p>
+<p align="center">
+  <img src="assets/docs/phone-settings.png" alt="Settings: mailbox, room, theme, font, photo size" width="24%">
+  <img src="assets/docs/phone-draft.png" alt="Staged photo on compose" width="24%">
+  <img src="assets/docs/phone-photo.png" alt="Photo in a you-bubble" width="24%">
+  <img src="assets/docs/phone-down.png" alt="Socket down, local echo still sending" width="24%">
+</p>
+
+Simulator captures from `make shot`; the full list and what each
+scene is: [docs/screens.md](docs/screens.md).
+
 | Repo | Job |
 | --- | --- |
 | **gantry-helm** | This iOS app. Pocket thread + CarPlay message cards. |
