@@ -49,6 +49,7 @@ test-scripts: ## Semver + coverage-badge + release + hooks + bake (no Swift tool
 	./test/scripts/helm-glue.test.sh
 	./test/scripts/helm-parity.test.sh
 	./test/scripts/helm-shot.test.sh
+	./test/scripts/helm-icon.test.sh
 	./test/scripts/swift-format.test.sh
 
 .PHONY: test-app

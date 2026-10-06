@@ -18,11 +18,9 @@ struct HelmSettings: View {
           .foregroundStyle(Color(rgb: colors.muted))
         if !model.cranes.isEmpty {
           Text("Talking to").font(.caption).foregroundStyle(Color(rgb: colors.muted))
-          ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-              ForEach(model.cranes, id: \.self) { c in
-                chip(displaySlug(c), on: c == model.slug) { model.slug = c }
-              }
+          ChipWrap {
+            ForEach(model.cranes, id: \.self) { c in
+              chip(displaySlug(c), on: c == model.slug) { model.slug = c }
             }
           }
         }
@@ -89,11 +87,9 @@ struct HelmSettings: View {
         .foregroundStyle(Color(rgb: colors.dim))
         if model.voiceOffered {
           Text("Language").font(.caption).foregroundStyle(Color(rgb: colors.muted))
-          ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-              ForEach(langIds, id: \.self) { id in
-                chip(langLabel(id), on: id == model.langId) { model.setLang(id) }
-              }
+          ChipWrap {
+            ForEach(langIds, id: \.self) { id in
+              chip(langLabel(id), on: id == model.langId) { model.setLang(id) }
             }
           }
           .accessibilityLabel("language")
@@ -102,28 +98,22 @@ struct HelmSettings: View {
             .foregroundStyle(Color(rgb: colors.dim))
         }
         Text("Theme").font(.caption).foregroundStyle(Color(rgb: colors.muted))
-        ScrollView(.horizontal, showsIndicators: false) {
-          HStack {
-            ForEach(themeIds, id: \.self) { id in
-              chip(themeLabel(id), on: id == model.themeId) { model.pickTheme(id) }
-            }
+        ChipWrap {
+          ForEach(themeIds, id: \.self) { id in
+            chip(themeLabel(id), on: id == model.themeId) { model.pickTheme(id) }
           }
         }
         .accessibilityLabel("color theme")
         Text("Font size").font(.caption).foregroundStyle(Color(rgb: colors.muted))
-        ScrollView(.horizontal, showsIndicators: false) {
-          HStack {
-            ForEach(fontIds, id: \.self) { id in
-              chip(fontLabel(id), on: id == model.fontId) { model.fontId = id }
-            }
+        ChipWrap {
+          ForEach(fontIds, id: \.self) { id in
+            chip(fontLabel(id), on: id == model.fontId) { model.fontId = id }
           }
         }
         Text("Photo size").font(.caption).foregroundStyle(Color(rgb: colors.muted))
-        ScrollView(.horizontal, showsIndicators: false) {
-          HStack {
-            ForEach(photoSizeIds, id: \.self) { id in
-              chip(photoSizeChip(id), on: id == model.photoSizeId) { model.photoSizeId = id }
-            }
+        ChipWrap {
+          ForEach(photoSizeIds, id: \.self) { id in
+            chip(photoSizeChip(id), on: id == model.photoSizeId) { model.photoSizeId = id }
           }
         }
         Text("Smaller sends faster and costs fewer tokens to look at.")
@@ -170,13 +160,11 @@ struct HelmSettings: View {
         #if DEBUG
           if HelmConfig.debug {
             Text("Samples").font(.caption).foregroundStyle(Color(rgb: colors.muted))
-            ScrollView(.horizontal, showsIndicators: false) {
-              HStack {
-                ForEach(sampleIds, id: \.self) { id in
-                  chip(id, on: false) {
-                    model.applySample(id)
-                    model.showSettings = false
-                  }
+            ChipWrap {
+              ForEach(sampleIds, id: \.self) { id in
+                chip(id, on: false) {
+                  model.applySample(id)
+                  model.showSettings = false
                 }
               }
             }
@@ -214,7 +202,9 @@ struct HelmSettings: View {
       .padding(24)
       .padding(.bottom, 32)
     }
-    .background(Color(rgb: helmColors(model.paintedTheme).canvas))
+    .scrollDismissesKeyboard(.interactively)
+    .modifier(KeyboardOverlap(cover: Color(rgb: colors.canvas)))
+    .background(Color(rgb: colors.canvas))
     .navigationTitle("Settings")
     .onDisappear { model.persistFields() }
   }
@@ -243,5 +233,72 @@ struct HelmSettings: View {
           Capsule().stroke(on ? Color(rgb: colors.accent) : Color(rgb: colors.line), lineWidth: 1)
         )
     }
+  }
+}
+
+private struct ChipWrap: Layout {
+  var spacing: CGFloat = 8
+
+  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    let limit = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? .greatestFiniteMagnitude
+    let rows = flow(maxWidth: limit, subviews: subviews)
+    let natural = rows.map(\.width).max() ?? 0
+    let width = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? natural
+    let gaps = spacing * CGFloat(max(0, rows.count - 1))
+    let height = rows.reduce(CGFloat(0)) { $0 + $1.height } + gaps
+    return CGSize(width: width, height: height)
+  }
+
+  func placeSubviews(
+    in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()
+  ) {
+    let rows = flow(maxWidth: bounds.width, subviews: subviews)
+    var y = bounds.minY
+    var index = 0
+    for row in rows {
+      var x = bounds.minX
+      for size in row.sizes {
+        subviews[index].place(
+          at: CGPoint(x: x, y: y),
+          anchor: .topLeading,
+          proposal: ProposedViewSize(width: size.width, height: size.height)
+        )
+        x += size.width + spacing
+        index += 1
+      }
+      y += row.height + spacing
+    }
+  }
+
+  private struct Row {
+    var sizes: [CGSize]
+    var width: CGFloat
+    var height: CGFloat
+  }
+
+  private func flow(maxWidth: CGFloat, subviews: Subviews) -> [Row] {
+    var rows: [Row] = []
+    var sizes: [CGSize] = []
+    var rowWidth: CGFloat = 0
+    var rowHeight: CGFloat = 0
+    let limit = maxWidth.isFinite ? maxWidth : .greatestFiniteMagnitude
+    for sub in subviews {
+      let size = sub.sizeThatFits(.unspecified)
+      let next = sizes.isEmpty ? size.width : rowWidth + spacing + size.width
+      if !sizes.isEmpty && next > limit {
+        rows.append(Row(sizes: sizes, width: rowWidth, height: rowHeight))
+        sizes = [size]
+        rowWidth = size.width
+        rowHeight = size.height
+      } else {
+        sizes.append(size)
+        rowWidth = next
+        rowHeight = max(rowHeight, size.height)
+      }
+    }
+    if !sizes.isEmpty {
+      rows.append(Row(sizes: sizes, width: rowWidth, height: rowHeight))
+    }
+    return rows
   }
 }

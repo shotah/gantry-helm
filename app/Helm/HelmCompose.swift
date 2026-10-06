@@ -105,8 +105,15 @@ struct HelmCompose: View {
             Image(systemName: "paperclip")
               .foregroundStyle(Color(rgb: colors.fg))
               .frame(width: 36, height: 36)
+              .overlay(alignment: .topTrailing) {
+                if model.gpsOn {
+                  Circle()
+                    .fill(Color(rgb: colors.accent))
+                    .frame(width: 9, height: 9)
+                }
+              }
           }
-          .accessibilityLabel("Attach")
+          .accessibilityLabel(model.gpsOn ? "Attach, GPS on" : "Attach")
           Button {
             emojiOpen.toggle()
           } label: {

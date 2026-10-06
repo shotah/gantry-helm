@@ -65,12 +65,10 @@ enum HelmNotify {
         customIdentifier: slug
       )
     )
-    if let update = try? content.updating(from: intent) {
-      content.setValue(update.value(forKey: "content") ?? content, forKey: "self")
-    }
+    let delivered = (try? content.updating(from: intent)) ?? content
     let req = UNNotificationRequest(
       identifier: UUID().uuidString,
-      content: content,
+      content: delivered,
       trigger: nil
     )
     UNUserNotificationCenter.current().add(req)
@@ -88,6 +86,14 @@ enum HelmNotify {
 
 final class HelmNotifyDelegate: NSObject, UNUserNotificationCenterDelegate {
   var onReply: ((String) -> Void)?
+
+  func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    completionHandler([.banner, .list, .sound])
+  }
 
   func userNotificationCenter(
     _ center: UNUserNotificationCenter,

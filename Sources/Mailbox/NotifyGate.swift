@@ -3,18 +3,17 @@ import Foundation
 /// Pendant `haptic.ts` visible-push buzz.
 public let pushBuzzMs: Int64 = 40
 
-/// Kit HUNs and the CarPlay mouth. Post when a head unit is attached or the
-/// phone thread is not resumed. Skip while the Helm CarPlay conversation
-/// screen is open (that template is the mouth then). Maps / music keep
-/// HUNs because that screen is not started. `kind` is `reply` / `push`
-/// only — same as `shouldSpeak`.
+/// Kit’s card on the phone. A live `reply` / `push` posts even while Helm
+/// is open, so the banner shows. Skip while the Helm CarPlay conversation
+/// screen is open (that template is the mouth then). `kind` is `reply` /
+/// `push` only — same as `shouldSpeak`.
 public func shouldPost(
-  resumed: Bool,
-  carAttached: Bool,
+  resumed _: Bool,
+  carAttached _: Bool,
   kind: String?,
   threadVisible: Bool = false
 ) -> Bool {
-  (kind == "reply" || kind == "push") && !threadVisible && (carAttached || !resumed)
+  (kind == "reply" || kind == "push") && !threadVisible
 }
 
 /// Visible ping on the phone when we skipped the toast.

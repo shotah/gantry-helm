@@ -52,7 +52,8 @@ final class CarPlayTests: XCTestCase {
         threadVisible: false, text: "  ", hasPhoto: true
       )
     )
-    XCTAssertNil(
+    XCTAssertEqual(
+      "hi",
       kitNoticeBody(
         painted: true, kind: "reply", replay: false, resumed: true, carAttached: false,
         threadVisible: false, text: "hi", hasPhoto: false

@@ -51,9 +51,9 @@ final class SendErrorGeoNotifySlashTests: XCTestCase {
     XCTAssertNil(geoFromFix(lat: 1.0, lon: 2.0, accuracyM: -1.0).accuracyM)
   }
 
-  func testPhoneThreadVisibleSkipsTheHeadsUp() {
-    XCTAssertFalse(shouldPost(resumed: true, carAttached: false, kind: "reply"))
-    XCTAssertFalse(shouldPost(resumed: true, carAttached: false, kind: "push"))
+  func testOpenPhoneStillPostsTheHeadsUp() {
+    XCTAssertTrue(shouldPost(resumed: true, carAttached: false, kind: "reply"))
+    XCTAssertTrue(shouldPost(resumed: true, carAttached: false, kind: "push"))
   }
 
   func testHeadUnitGetsTheMouthUnlessHelmIsOpen() {

@@ -11,11 +11,19 @@ struct HelmRoot: View {
 
   var body: some View {
     let colors = helmColors(model.paintedTheme)
-    NavigationStack {
-      HelmScreen()
-        .navigationDestination(isPresented: $model.showSettings) {
-          HelmSettings()
-        }
+    GeometryReader { geo in
+      NavigationStack {
+        HelmScreen()
+          .navigationDestination(isPresented: $model.showSettings) {
+            HelmSettings()
+          }
+      }
+      .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
+    }
+    .ignoresSafeArea(.keyboard)
+    .background {
+      ScreenPin()
+        .allowsHitTesting(false)
     }
     .tint(Color(rgb: colors.accent))
     .onChange(of: scenePhase) { phase in
@@ -60,66 +68,45 @@ struct HelmScreen: View {
                 .foregroundStyle(Color(rgb: colors.muted))
             }
           }
-          Spacer()
-          if model.voiceOffered {
-            Button {
-              model.toggleVoice()
-            } label: {
-              Image(systemName: model.voiceOn ? "mic.fill" : "mic")
-                .foregroundStyle(Color(rgb: colors.fg))
+          Spacer(minLength: 8)
+          HStack(spacing: 8) {
+            if model.voiceOffered {
+              headerIcon(
+                model.voiceOn ? "mic.fill" : "mic",
+                label: model.voiceOn ? "Voice on" : "Voice"
+              ) {
+                model.toggleVoice()
+              }
             }
-            .accessibilityLabel(model.voiceOn ? "Voice on" : "Voice")
-          }
-          if !model.todo.isEmpty {
-            Button {
-              model.showTasks = true
-            } label: {
-              Image(systemName: "checkmark.square")
-                .foregroundStyle(Color(rgb: colors.fg))
-                .overlay(alignment: .topTrailing) {
-                  if model.tasksChanged > 0 {
-                    Text("\(model.tasksChanged)")
-                      .font(.caption2)
-                      .padding(3)
-                      .background(Color(rgb: colors.accent))
-                      .clipShape(Circle())
-                      .offset(x: 8, y: -8)
-                  }
-                }
+            if !model.todo.isEmpty {
+              headerIcon(
+                "checkmark.square",
+                label: tasksLabel(model.tasksChanged),
+                badge: model.tasksChanged
+              ) {
+                model.showTasks = true
+              }
             }
-            .accessibilityLabel(tasksLabel(model.tasksChanged))
-          }
-          if !model.aims.isEmpty {
-            Button {
-              model.showGoals = true
-            } label: {
-              Image(systemName: "scope")
-                .foregroundStyle(Color(rgb: colors.fg))
-                .overlay(alignment: .topTrailing) {
-                  if model.goalsChanged > 0 {
-                    Text("\(model.goalsChanged)")
-                      .font(.caption2)
-                      .padding(3)
-                      .background(Color(rgb: colors.accent))
-                      .clipShape(Circle())
-                      .offset(x: 8, y: -8)
-                  }
-                }
+            if !model.aims.isEmpty {
+              headerIcon(
+                "scope",
+                label: goalsLabel(model.goalsChanged),
+                badge: model.goalsChanged
+              ) {
+                model.showGoals = true
+              }
             }
-            .accessibilityLabel(goalsLabel(model.goalsChanged))
+            headerIcon("gearshape", label: "Settings") {
+              model.showSettings = true
+            }
           }
-          Button {
-            model.showSettings = true
-          } label: {
-            Image(systemName: "gearshape")
-              .foregroundStyle(Color(rgb: colors.fg))
-          }
-          .accessibilityLabel("Settings")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .background(Color(rgb: colors.panel))
+        .layoutPriority(1)
         HelmChat()
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
         HelmCompose()
       }
       KitFace(jpeg: model.faceJpeg, rev: model.avatarRev)
@@ -127,6 +114,7 @@ struct HelmScreen: View {
         .offset(x: 8 + headerFaceNudgeX, y: headerFaceNudgeY)
         .zIndex(2)
     }
+    .modifier(KeyboardOverlap(cover: Color(rgb: colors.panel)))
     .onAppear {
       if !model.sampleShown {
         HelmNotify.setup()
@@ -146,6 +134,34 @@ struct HelmScreen: View {
           .onAppear { model.markTodoSeen() }
       }
     )
+  }
+
+  private func headerIcon(
+    _ systemName: String,
+    label: String,
+    badge: Int = 0,
+    action: @escaping () -> Void
+  ) -> some View {
+    let colors = helmColors(model.paintedTheme)
+    return Button(action: action) {
+      Image(systemName: systemName)
+        .font(.body)
+        .foregroundStyle(Color(rgb: colors.fg))
+        .frame(width: 44, height: 44)
+        .contentShape(Rectangle())
+        .overlay(alignment: .topTrailing) {
+          if badge > 0 {
+            Text("\(badge)")
+              .font(.caption2)
+              .padding(3)
+              .background(Color(rgb: colors.accent))
+              .clipShape(Circle())
+              .offset(x: -4, y: 4)
+          }
+        }
+    }
+    .buttonStyle(.plain)
+    .accessibilityLabel(label)
   }
 
   private func statusLine(now: Date) -> String {
@@ -183,6 +199,132 @@ struct KitFace: View {
   }
 }
 
+#if canImport(UIKit)
+  /// UIKit slides the hosting view up with the keyboard and can leave that
+  /// offset in place after dismiss. Put the full-width ancestors back.
+  private struct ScreenPin: UIViewRepresentable {
+    func makeUIView(context: Context) -> PinView { PinView() }
+
+    func updateUIView(_ uiView: PinView, context: Context) {
+      uiView.pin()
+    }
+
+    final class PinView: UIView {
+      private var token: NSObjectProtocol?
+      private var pinning = false
+
+      override init(frame: CGRect) {
+        super.init(frame: frame)
+        isUserInteractionEnabled = false
+        backgroundColor = .clear
+        token = NotificationCenter.default.addObserver(
+          forName: UIResponder.keyboardWillChangeFrameNotification,
+          object: nil,
+          queue: .main
+        ) { [weak self] _ in
+          self?.pin()
+        }
+      }
+
+      required init?(coder: NSCoder) {
+        nil
+      }
+
+      deinit {
+        if let token {
+          NotificationCenter.default.removeObserver(token)
+        }
+      }
+
+      override func didMoveToWindow() {
+        super.didMoveToWindow()
+        pin()
+      }
+
+      override func layoutSubviews() {
+        super.layoutSubviews()
+        pin()
+      }
+
+      func pin() {
+        guard let window, let root = window.rootViewController?.view, !pinning else {
+          return
+        }
+        pinning = true
+        defer { pinning = false }
+        straighten(root, window: window)
+      }
+
+      private func straighten(_ view: UIView, window: UIWindow) {
+        if view.transform != .identity {
+          view.transform = .identity
+        }
+        let size = view.bounds.size
+        let fullWidth = abs(size.width - window.bounds.width) < 2
+        let tall = size.height > window.bounds.height * 0.45
+        if fullWidth && tall, let host = view.superview {
+          let origin = host.convert(view.frame.origin, to: window)
+          if origin.y < -1 {
+            var frame = view.frame
+            frame.origin.y -= origin.y
+            frame.origin.x = 0
+            view.frame = frame
+            if let scroll = view as? UIScrollView, scroll.contentOffset.y > 1 {
+              scroll.contentOffset = .zero
+            }
+          }
+        }
+        for child in view.subviews {
+          straighten(child, window: window)
+        }
+      }
+    }
+  }
+#endif
+
+struct KeyboardOverlap: ViewModifier {
+  var cover: Color
+  @State private var lift: CGFloat = 0
+
+  func body(content: Content) -> some View {
+    content
+      .padding(.bottom, lift)
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+      .background(alignment: .bottom) {
+        cover.frame(maxWidth: .infinity).frame(height: lift)
+      }
+      .onReceive(
+        NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)
+      ) { note in
+        let next = Self.lift(for: note)
+        guard next != lift else {
+          return
+        }
+        let duration =
+          note.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double ?? 0.25
+        withAnimation(.easeOut(duration: duration)) {
+          lift = next
+        }
+      }
+  }
+
+  private static func lift(for note: Notification) -> CGFloat {
+    #if canImport(UIKit)
+      guard let end = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
+        return 0
+      }
+      let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first {
+        $0.activationState == .foregroundActive
+      }
+      let bottom = scene?.screen.bounds.maxY ?? end.maxY
+      let home = scene?.keyWindow?.safeAreaInsets.bottom ?? 0
+      return max(0, bottom - end.minY - home)
+    #else
+      return 0
+    #endif
+  }
+}
+
 func helmImage(_ data: Data) -> Image? {
   #if canImport(UIKit)
     if let ui = UIImage(data: data) {
@@ -192,27 +334,55 @@ func helmImage(_ data: Data) -> Image? {
   return nil
 }
 
+private let chatTailID = "helm-chat-tail"
+
 struct HelmChat: View {
   @EnvironmentObject var model: HelmModel
+
+  /// Count plus the latest bubble. Text edits of that bubble do not count, so a
+  /// scroll up into history stays put until a new line arrives.
+  private var pinToken: String {
+    guard let last = model.lines.last else {
+      return ""
+    }
+    return "\(model.lines.count)\n\(composeKey(last))"
+  }
 
   var body: some View {
     let colors = helmColors(model.paintedTheme)
     ScrollViewReader { proxy in
       ScrollView {
+        // Newest first. The scroll view is flipped, so this end sits on screen
+        // at the bottom without waiting for a scroll-to that the lazy stack never built.
         LazyVStack(alignment: .leading, spacing: 8) {
-          ForEach(model.lines, id: \.id) { line in
+          Color.clear
+            .frame(maxWidth: .infinity)
+            .frame(height: 1)
+            .id(chatTailID)
+          ForEach(Array(model.lines.reversed()), id: \.id) { line in
             bubble(line, colors: colors)
               .id(composeKey(line))
+              .scaleEffect(y: -1)
           }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
       }
-      .onChange(of: model.lines.count) { _ in
-        if let last = model.lines.last {
-          proxy.scrollTo(composeKey(last), anchor: .bottom)
+      .scrollDismissesKeyboard(.interactively)
+      .scaleEffect(y: -1)
+      .onChange(of: pinToken) { _, token in
+        guard !token.isEmpty else {
+          return
         }
+        pin(proxy)
       }
+    }
+  }
+
+  private func pin(_ proxy: ScrollViewProxy) {
+    proxy.scrollTo(chatTailID, anchor: .top)
+    DispatchQueue.main.async {
+      proxy.scrollTo(chatTailID, anchor: .top)
     }
   }
 
