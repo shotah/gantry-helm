@@ -18,7 +18,8 @@ enum HelmNotify {
     let cat = UNNotificationCategory(
       identifier: category,
       actions: [reply],
-      intentIdentifiers: [INSendMessageIntent.intentIdentifier],
+      // iOS 27 dropped INSendMessageIntent.intentIdentifier. Its value was the class name.
+      intentIdentifiers: ["INSendMessageIntent"],
       hiddenPreviewsBodyPlaceholder: kitReplyPreview,
       options: [.allowInCarPlay, .allowAnnouncement]
     )
