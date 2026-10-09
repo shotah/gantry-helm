@@ -114,6 +114,42 @@ final class TodoTests: XCTestCase {
     XCTAssertFalse(movesCursor("todo"))
   }
 
+  func testPriorityLeadsTheTextAndGluedOrTripleBangsAreWords() {
+    XCTAssertEqual(.urgent, todoPriority("!! call the vet"))
+    XCTAssertEqual(.high, todoPriority("! renew passport"))
+    XCTAssertEqual(.normal, todoPriority("buy milk"))
+    XCTAssertEqual(.normal, todoPriority("!!! loud"))
+    XCTAssertEqual(.normal, todoPriority("!!file"))
+    XCTAssertEqual(.normal, todoPriority("!!"))
+    XCTAssertEqual(.normal, todoPriority("!"))
+    XCTAssertEqual(.normal, todoPriority("!! "))
+    XCTAssertEqual("call the vet", todoWords("!! call the vet"))
+    XCTAssertEqual("renew passport", todoWords("! renew passport"))
+    XCTAssertEqual("!!! loud", todoWords("!!! loud"))
+    XCTAssertEqual("!!file", todoWords("!!file"))
+    XCTAssertEqual("!!", todoTag(.urgent))
+    XCTAssertEqual("!", todoTag(.high))
+    XCTAssertNil(todoTag(.normal))
+    XCTAssertEqual("urgent", todoPriorityLabel(.urgent))
+    XCTAssertEqual("high", todoPriorityLabel(.high))
+    XCTAssertNil(todoPriorityLabel(.normal))
+  }
+
+  func testSortIsUrgentThenHighThenRestOldestFirstInsideEachRank() {
+    let rows = [
+      TodoRow(id: 1, slug: "a", text: "plain one", at: "2026-09-01"),
+      TodoRow(id: 2, slug: "b", text: "! high one", at: "2026-09-02"),
+      TodoRow(id: 3, slug: "c", text: "!! urgent one", at: "2026-09-03"),
+      TodoRow(id: 4, slug: "d", text: "plain two", at: "2026-09-04"),
+      TodoRow(id: 5, slug: "e", text: "!! urgent two", at: "2026-09-05"),
+      TodoRow(id: 6, slug: "f", text: "! high two", at: "2026-09-06"),
+    ]
+    XCTAssertEqual([3, 5, 2, 6, 1, 4], sortTodo(rows).map(\.id))
+    XCTAssertEqual([], sortTodo([]))
+    // The raw text is what the seen badge keys on; the marker stays in it.
+    XCTAssertEqual(0, changedTodo(sortTodo(rows), seen: seenTodo(rows)))
+  }
+
   func testIngestReplacesTheListAndNeverPaintsABubble() {
     let mouth = Mouth()
     XCTAssertFalse(mouth.ingest(parseFrame(list)!))

@@ -52,6 +52,38 @@ public func roomThemeNotice(
   return knownTheme(themeRaw)
 }
 
+/// Tap the header face → a sheet, not the photo picker. The face large, the
+/// crane's name, then these rows. The Google door does not open it.
+public let avatarSheetFaceSize: Double = 160
+
+public enum AvatarAction: Equatable, CaseIterable {
+  /// The JPEG on the pasteboard as an image; the sheet stays up.
+  case copy
+  /// System share sheet over the JPEG; closes.
+  case share
+  /// The photo picker; closes.
+  case replace
+
+  public var label: String {
+    switch self {
+    case .copy: return "Copy"
+    case .share: return "Share"
+    case .replace: return "Replace"
+    }
+  }
+}
+
+/// Copy and Share only when the room has set a face; the bundled default is
+/// nobody's work, so that sheet is Replace alone.
+public func avatarSheetActions(hasFace: Bool) -> [AvatarAction] {
+  hasFace ? AvatarAction.allCases : [.replace]
+}
+
+/// The Copy row flips to "Copied" and stays.
+public func avatarCopyLabel(copied: Bool) -> String {
+  copied ? "Copied" : AvatarAction.copy.label
+}
+
 /// `If-None-Match` for a blob we hold; pendant `blobEtag`.
 public func blobEtag(_ rev: Int) -> String {
   "\"\(rev)\""

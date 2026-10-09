@@ -48,6 +48,24 @@ public func canReact(fromYou: Bool, kind: String?, id: String) -> Bool {
   !fromYou && (kind == "reply" || kind == "push") && !id.isEmpty
 }
 
+/// Emoji rows: Kit's `reply` / `push`, socket live. Down, a pick could not send.
+public func showsReactions(fromYou: Bool, kind: String?, id: String, up: Bool) -> Bool {
+  up && canReact(fromYou: fromYou, kind: kind, id: id)
+}
+
+/// First row of the bubble menu. The raw markdown goes on the pasteboard.
+public let copyTextLabel = "Copy text"
+
+/// Any bubble with words — yours too, socket down too. A photo-only bubble has no copy row.
+public func canCopy(_ text: String) -> Bool {
+  !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+}
+
+/// Hold opens the bubble menu when it would have a row.
+public func canHold(fromYou: Bool, kind: String?, id: String, text: String, up: Bool) -> Bool {
+  canCopy(text) || showsReactions(fromYou: fromYou, kind: kind, id: id, up: up)
+}
+
 public func reactFrame(id: String, text: String) -> WireFrame {
   WireFrame(kind: "react", text: text, id: id)
 }

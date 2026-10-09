@@ -17,7 +17,7 @@ struct HelmTasks: View {
             Spacer()
             Button("Full list") { model.askTask(todoListCommand) }
           }
-          ForEach(model.todo) { row in
+          ForEach(sortTodo(model.todo)) { row in
             taskRow(row, today: today, colors: colors)
           }
           if let footer = pocketFooter(model.todo.count) {
@@ -48,6 +48,7 @@ struct HelmTasks: View {
 
   private func taskRow(_ row: TodoRow, today: String, colors: HelmColors) -> some View {
     let done = ticked.contains(row.id)
+    let priority = todoPriority(row.text)
     return HStack(alignment: .center, spacing: 8) {
       Button {
         guard canTick(id: row.id, ticked: ticked) else {
@@ -61,9 +62,21 @@ struct HelmTasks: View {
       }
       .accessibilityLabel("done \(row.slug)")
       VStack(alignment: .leading, spacing: 2) {
-        Text(row.text)
-          .strikethrough(done)
-          .foregroundStyle(Color(rgb: done ? colors.muted : colors.fg))
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+          if let tag = todoTag(priority), let label = todoPriorityLabel(priority) {
+            Text(tag)
+              .font(.caption.weight(.bold))
+              .padding(.horizontal, 6)
+              .padding(.vertical, 2)
+              .background(Color(rgb: priority == .urgent ? colors.danger : colors.accent))
+              .foregroundStyle(Color(rgb: colors.canvas))
+              .clipShape(RoundedRectangle(cornerRadius: 6))
+              .accessibilityLabel(label)
+          }
+          Text(todoWords(row.text))
+            .strikethrough(done)
+            .foregroundStyle(Color(rgb: done ? colors.muted : colors.fg))
+        }
         Text(todoMeta(row, today: today))
           .font(.caption2)
           .foregroundStyle(Color(rgb: colors.muted))

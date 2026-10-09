@@ -72,6 +72,21 @@ letting another app read the thread are the failures that matter.
       (`helm` / `todoSeen`), keyed by slug. Checkbox sends
       `/todo done <id>` and stays open. Add and Full list close.
       CarPlay shows nothing.
+- [x] **Task priority.** No wire change: `!! ` leads urgent, `! ` leads
+      high (`todoPriority` / `todoWords` / `sortTodo`). Text stays raw
+      for the seen badge. Tasks sheet sorts urgent → high → rest,
+      oldest first inside each rank, and paints the marker as a tag.
+- [x] **Copy text from a bubble.** Hold on any bubble with words — yours
+      too, socket down too — opens the bubble menu. **Copy text** puts the
+      raw markdown on the pasteboard; emoji rows sit under it only on
+      Kit's live `reply` / `push` (`canHold` / `canCopy` /
+      `showsReactions`). Photo-only bubbles have no copy row.
+- [x] **Avatar sheet.** Tap the header face → `HelmAvatar`: the face at
+      160 pt, the crane's name, then Copy (JPEG on the pasteboard,
+      label flips to Copied, stays up), Share (system share sheet,
+      closes), Replace (photo picker → `AvatarApi.upload`, closes).
+      Copy / Share only when the room set a face. The Google door does
+      not open it.
 
 Device `act` stays out until pendant routes `kind=helm`.
 
@@ -149,7 +164,7 @@ Enrollment facts, from [developer.apple.com/programs/enroll](https://developer.a
 
 Pendant and Cab do not have these either. Do not build them "to catch up":
 
-- Failed + retry on an unacked send; copy on long-press
+- Failed + retry on an unacked send
 - Painted timestamps / day chips
 - Stop-a-turn, quote / reply-to, reactions, read receipts
 - Sign in with Apple

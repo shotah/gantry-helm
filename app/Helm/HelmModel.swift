@@ -8,6 +8,7 @@ import UserNotifications
 #endif
 #if canImport(UIKit)
   import UIKit
+  import UniformTypeIdentifiers
 #endif
 
 @MainActor
@@ -44,8 +45,15 @@ final class HelmModel: ObservableObject {
   @Published var showEmoji = false
   @Published var showAttach = false
   @Published var focusCompose = false
-  /// Line whose reaction strip is open. Long-press opens; a pick or tap closes.
+  /// Line whose bubble menu is open. Long-press opens; copy, a pick, or a tap closes.
   @Published var reactingId: String?
+  @Published var showAvatar = false
+  /// Copy flipped to "Copied"; resets when the sheet closes.
+  @Published var faceCopied = false
+  /// Share / Replace close the avatar sheet, then run once it is gone.
+  @Published var avatarNext: AvatarAction?
+  @Published var shareFace = false
+  @Published var pickFace = false
   @Published var authHint = ""
   @Published var signingIn = false
   @Published var resumed = true
@@ -368,6 +376,79 @@ final class HelmModel: ObservableObject {
     }
     mouth.applyReaction(id: id, text: emoji)
     publish()
+  }
+
+  /// Bubble menu → Copy text: the raw markdown, then the menu closes.
+  func copyText(_ text: String) {
+    reactingId = nil
+    #if canImport(UIKit)
+      UIPasteboard.general.string = text
+    #endif
+  }
+
+  /// Avatar sheet → Copy: the JPEG as an image; the sheet stays up.
+  func copyFace() {
+    guard let jpeg = faceJpeg else {
+      return
+    }
+    #if canImport(UIKit)
+      UIPasteboard.general.setData(jpeg, forPasteboardType: UTType.jpeg.identifier)
+    #endif
+    faceCopied = true
+  }
+
+  /// Share and Replace close the sheet first; `avatarDismissed` picks up.
+  func avatarAct(_ action: AvatarAction) {
+    switch action {
+    case .copy:
+      copyFace()
+    case .share, .replace:
+      avatarNext = action
+      showAvatar = false
+    }
+  }
+
+  func avatarDismissed() {
+    faceCopied = false
+    guard let next = avatarNext else {
+      return
+    }
+    avatarNext = nil
+    switch next {
+    case .share:
+      shareFace = faceJpeg != nil
+    case .replace:
+      pickFace = true
+    case .copy:
+      break
+    }
+  }
+
+  /// Replace: encode to the avatar caps, POST, then refetch the face.
+  func replaceFace(data: Data) {
+    guard let jpeg = jpegFromImageData(data, edge: avatarEdge, maxBytes: avatarMaxBytes) else {
+      mouth.setHint(describePhotoError(photoErrorToken("too large")))
+      publish()
+      return
+    }
+    let api = blobs
+    let origin = self.origin
+    let slug = self.slug
+    let bearer = self.bearer
+    DispatchQueue.global(qos: .userInitiated).async {
+      guard let result = api?.upload(origin: origin, slug: slug, bearer: bearer, jpeg: jpeg) else {
+        return
+      }
+      DispatchQueue.main.async {
+        switch result {
+        case .ok:
+          self.refreshLook()
+        case .err(let error):
+          self.mouth.setHint(error)
+          self.publish()
+        }
+      }
+    }
   }
 
   func askGoal(_ text: String) {

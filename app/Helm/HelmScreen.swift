@@ -109,10 +109,16 @@ struct HelmScreen: View {
           .frame(maxWidth: .infinity, maxHeight: .infinity)
         HelmCompose()
       }
-      KitFace(jpeg: model.faceJpeg, rev: model.avatarRev)
-        .frame(width: headerFaceSize, height: headerFaceSize)
-        .offset(x: 8 + headerFaceNudgeX, y: headerFaceNudgeY)
-        .zIndex(2)
+      Button {
+        model.showAvatar = true
+      } label: {
+        KitFace(jpeg: model.faceJpeg, rev: model.avatarRev)
+          .frame(width: headerFaceSize, height: headerFaceSize)
+      }
+      .buttonStyle(.plain)
+      .accessibilityLabel("Kit's face")
+      .offset(x: 8 + headerFaceNudgeX, y: headerFaceNudgeY)
+      .zIndex(2)
     }
     .onAppear {
       if !model.sampleShown {
@@ -133,6 +139,17 @@ struct HelmScreen: View {
           .onAppear { model.markTodoSeen() }
       }
     )
+    .sheet(
+      isPresented: $model.showAvatar,
+      onDismiss: {
+        model.avatarDismissed()
+      },
+      content: {
+        HelmAvatar()
+          .environmentObject(model)
+      }
+    )
+    .modifier(HelmAvatarFollowUp())
   }
 
   private func headerIcon(
@@ -286,7 +303,7 @@ struct HelmChat: View {
           Text(failed).font(.caption2).foregroundStyle(Color(rgb: colors.danger))
         }
         if model.reactingId == line.id {
-          reactionStrip(line, colors: colors)
+          bubbleMenu(line, colors: colors)
         }
       }
       if !line.fromYou { Spacer(minLength: 48) }
@@ -297,15 +314,42 @@ struct HelmChat: View {
       model.reactingId = nil
     }
     .onLongPressGesture {
-      if canReact(fromYou: line.fromYou, kind: line.kind, id: line.id) {
+      if canHold(fromYou: line.fromYou, kind: line.kind, id: line.id, text: line.text, up: model.up)
+      {
         model.reactingId = line.id
       }
     }
   }
 
-  /// Inline picker, no context-menu lift: that preview snapshots the flipped
-  /// bubble and shows it upside down.
-  private func reactionStrip(_ line: ChatLine, colors: HelmColors) -> some View {
+  /// Inline menu, no context-menu lift: that preview snapshots the flipped
+  /// bubble and shows it upside down. Copy text first on any bubble with
+  /// words; the emoji rows under it only on Kit's live `reply` / `push`.
+  private func bubbleMenu(_ line: ChatLine, colors: HelmColors) -> some View {
+    VStack(spacing: 4) {
+      if canCopy(line.text) {
+        Button {
+          model.copyText(line.text)
+        } label: {
+          Label(copyTextLabel, systemImage: "doc.on.doc")
+            .font(.callout)
+            .foregroundStyle(Color(rgb: colors.fg))
+            .frame(maxWidth: .infinity, minHeight: 40)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(copyTextLabel)
+      }
+      if showsReactions(fromYou: line.fromYou, kind: line.kind, id: line.id, up: model.up) {
+        reactionRowsView(line, colors: colors)
+      }
+    }
+    .padding(6)
+    .background(Color(rgb: colors.panel))
+    .clipShape(RoundedRectangle(cornerRadius: 12))
+    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(rgb: colors.line), lineWidth: 1))
+    .accessibilityLabel("Bubble menu")
+  }
+
+  private func reactionRowsView(_ line: ChatLine, colors: HelmColors) -> some View {
     VStack(spacing: 4) {
       ForEach(reactionRows(reactionPalette), id: \.self) { row in
         HStack(spacing: 4) {
@@ -327,10 +371,6 @@ struct HelmChat: View {
         }
       }
     }
-    .padding(6)
-    .background(Color(rgb: colors.panel))
-    .clipShape(RoundedRectangle(cornerRadius: 12))
-    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(rgb: colors.line), lineWidth: 1))
     .accessibilityLabel("Reactions")
   }
 }

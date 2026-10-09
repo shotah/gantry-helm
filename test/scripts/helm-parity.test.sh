@@ -32,7 +32,7 @@ grep -q 'goalsLabel' "$screen" || {
   echo "FAIL: header must use goalsLabel" >&2
   exit 1
 }
-grep -q 'canReact' "$screen" || {
+grep -q 'canReact\|showsReactions' "$screen" || {
   echo "FAIL: Kit bubbles need the reaction menu" >&2
   exit 1
 }
@@ -70,6 +70,42 @@ grep -q 'GoogleNeedNonce' "$root/app/Helm/HelmGoogle.swift" || {
 }
 if grep -q 'mintNonce' "$root/Sources/Mailbox/Auth.swift" "$root/app/Helm/HelmGoogle.swift"; then
   echo "FAIL: do not mint a nonce when GET /api/auth/nonce fails" >&2
+  exit 1
+fi
+grep -q 'sortTodo' "$root/app/Helm/HelmTasks.swift" || {
+  echo "FAIL: Tasks sheet must sort urgent → high → rest" >&2
+  exit 1
+}
+grep -q 'todoWords' "$root/app/Helm/HelmTasks.swift" || {
+  echo "FAIL: Tasks sheet paints the marker as a tag, not the first word" >&2
+  exit 1
+}
+grep -q 'canHold' "$screen" || {
+  echo "FAIL: hold on any bubble with words opens the bubble menu" >&2
+  exit 1
+}
+grep -q 'copyTextLabel' "$screen" || {
+  echo "FAIL: bubble menu needs a Copy text row" >&2
+  exit 1
+}
+grep -q 'showsReactions' "$screen" || {
+  echo "FAIL: emoji rows only on a live Kit bubble" >&2
+  exit 1
+}
+grep -q 'showAvatar' "$screen" || {
+  echo "FAIL: header face tap opens the avatar sheet" >&2
+  exit 1
+}
+grep -q 'avatarSheetActions' "$root/app/Helm/HelmAvatar.swift" || {
+  echo "FAIL: avatar sheet rows come from avatarSheetActions" >&2
+  exit 1
+}
+grep -q 'HelmAvatar.swift' "$root/app/Helm.xcodeproj/project.pbxproj" || {
+  echo "FAIL: HelmAvatar.swift must be on the Xcode target" >&2
+  exit 1
+}
+if grep -q 'showAvatar' "$settings"; then
+  echo "FAIL: the Google door does not open the avatar sheet" >&2
   exit 1
 fi
 grep -q 'NSSpeechRecognitionUsageDescription' "$root/app/Info.plist" || {

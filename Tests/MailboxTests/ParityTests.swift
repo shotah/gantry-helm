@@ -86,6 +86,34 @@ final class ParityTests: XCTestCase {
     XCTAssertTrue(raw.contains("🔥"))
   }
 
+  func testHoldOpensOnAnyBubbleWithWordsAndEmojiOnlyWhenKitIsLive() {
+    XCTAssertTrue(canCopy("leave by 8"))
+    XCTAssertFalse(canCopy("   "))
+    XCTAssertFalse(canCopy(""))
+    XCTAssertEqual("Copy text", copyTextLabel)
+    // Yours too, socket down too.
+    XCTAssertTrue(canHold(fromYou: true, kind: "inbound", id: "i1", text: "hi", up: false))
+    XCTAssertTrue(canHold(fromYou: false, kind: "reply", id: "r1", text: "hi", up: false))
+    // A photo-only bubble has no copy row; Kit's live reply still has emoji.
+    XCTAssertTrue(canHold(fromYou: false, kind: "reply", id: "r1", text: "", up: true))
+    XCTAssertFalse(canHold(fromYou: false, kind: "reply", id: "r1", text: "", up: false))
+    XCTAssertFalse(canHold(fromYou: true, kind: "inbound", id: "i1", text: "", up: true))
+    XCTAssertTrue(showsReactions(fromYou: false, kind: "push", id: "p1", up: true))
+    XCTAssertFalse(showsReactions(fromYou: false, kind: "push", id: "p1", up: false))
+    XCTAssertFalse(showsReactions(fromYou: true, kind: "inbound", id: "i1", up: true))
+  }
+
+  func testAvatarSheetOffersCopyAndShareOnlyForARoomFace() {
+    XCTAssertEqual([.copy, .share, .replace], avatarSheetActions(hasFace: true))
+    XCTAssertEqual([.replace], avatarSheetActions(hasFace: false))
+    XCTAssertEqual("Copy", AvatarAction.copy.label)
+    XCTAssertEqual("Share", AvatarAction.share.label)
+    XCTAssertEqual("Replace", AvatarAction.replace.label)
+    XCTAssertEqual("Copied", avatarCopyLabel(copied: true))
+    XCTAssertEqual("Copy", avatarCopyLabel(copied: false))
+    XCTAssertEqual(160, avatarSheetFaceSize)
+  }
+
   func testSeenAckIsTrueOnlyAndDismissesASiblingRead() {
     XCTAssertEqual(true, parseSeen(true))
     XCTAssertNil(parseSeen(false))

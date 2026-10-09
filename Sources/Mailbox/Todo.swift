@@ -193,6 +193,67 @@ private func todoRowJson(_ row: TodoRow) -> String {
   return s
 }
 
+/// No wire change: the crane leads `text` with `!! ` (urgent) or `! ` (high).
+/// `text` stays raw — the seen badge keys on it — so these read it, not rewrite it.
+public enum TodoPriority: Int, Equatable, CaseIterable {
+  case urgent
+  case high
+  case normal
+}
+
+private let urgentMarker = "!! "
+private let highMarker = "! "
+
+/// `!!!`, a glued `!!file`, or a bare `!!` are words, not a marker.
+public func todoPriority(_ text: String) -> TodoPriority {
+  if leadsWith(text, urgentMarker) {
+    return .urgent
+  }
+  if leadsWith(text, highMarker) {
+    return .high
+  }
+  return .normal
+}
+
+/// The words after the marker; the whole text when there is none.
+public func todoWords(_ text: String) -> String {
+  switch todoPriority(text) {
+  case .urgent: return String(text.dropFirst(urgentMarker.count))
+  case .high: return String(text.dropFirst(highMarker.count))
+  case .normal: return text
+  }
+}
+
+/// The coloured tag ahead of the words; nil for normal.
+public func todoTag(_ priority: TodoPriority) -> String? {
+  switch priority {
+  case .urgent: return "!!"
+  case .high: return "!"
+  case .normal: return nil
+  }
+}
+
+/// Accessibility label for the tag; nil for normal.
+public func todoPriorityLabel(_ priority: TodoPriority) -> String? {
+  switch priority {
+  case .urgent: return "urgent"
+  case .high: return "high"
+  case .normal: return nil
+  }
+}
+
+/// Urgent → high → rest; oldest first (the wire order) inside each rank.
+public func sortTodo(_ rows: [TodoRow]) -> [TodoRow] {
+  TodoPriority.allCases.flatMap { rank in rows.filter { todoPriority($0.text) == rank } }
+}
+
+private func leadsWith(_ text: String, _ marker: String) -> Bool {
+  guard text.hasPrefix(marker) else {
+    return false
+  }
+  return !text.dropFirst(marker.count).trimmingCharacters(in: .whitespaces).isEmpty
+}
+
 /// A tick is local until the next `todo` frame settles it.
 public func settleTicked() -> Set<Int64> {
   []
