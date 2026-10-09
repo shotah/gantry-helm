@@ -44,6 +44,22 @@ grep -q 'langIds' "$settings" || {
   echo "FAIL: Settings language must use langIds" >&2
   exit 1
 }
+grep -q 'themeGroups' "$settings" || {
+  echo "FAIL: Settings themes must use the Plain / Moods groups" >&2
+  exit 1
+}
+grep -q 'pickTheme' "$settings" || {
+  echo "FAIL: a theme chip must call pickTheme" >&2
+  exit 1
+}
+grep -q '"Kit"' "$settings" || {
+  echo "FAIL: the room theme chip needs a Kit tag" >&2
+  exit 1
+}
+grep -q 'preferredColorScheme' "$root/app/Helm/HelmApp.swift" || {
+  echo "FAIL: scheme must drive preferredColorScheme" >&2
+  exit 1
+}
 grep -q 'kind == "todo"' "$root/Sources/Mailbox/Mouth.swift" || {
   echo "FAIL: Mouth must ingest todo before the bubble path" >&2
   exit 1

@@ -1,18 +1,32 @@
-/// Same ids as pendant `lib/theme/catalog.ts`. Boom / Inlay / Lamp hexes must not drift.
-public let themeIds = [
-  "boom",
-  "inlay",
-  "lamp",
-  "noir",
-  "ember",
-  "tide",
-  "bloom",
-  "paper",
-  "chalk",
-  "foam",
-  "petal",
-  "ink",
+/// Settings groups. Plain is the three neutrals. Moods are dark/light pairs.
+public struct ThemeGroup: Equatable {
+  public var title: String
+  public var rows: [[String]]
+}
+
+/// Same ids as pendant `lib/theme/catalog.ts`, catalog order.
+/// Boom hexes stay shared with gantree. A stored retired id (`inlay`, `lamp`,
+/// `noir`, `ember`, `tide`, `bloom`, `chalk`, `foam`, `petal`) is unknown
+/// and falls back to boom.
+public let themeGroups: [ThemeGroup] = [
+  ThemeGroup(title: "Plain", rows: [["boom", "paper", "ink"]]),
+  ThemeGroup(
+    title: "Moods",
+    rows: [
+      ["marquee", "lemonade"],
+      ["neon", "fizz"],
+      ["rain", "mist"],
+      ["fuse", "grit"],
+      ["siren", "flare"],
+      ["static", "flicker"],
+    ]
+  ),
 ]
+
+public let themeIds: [String] = themeGroups.flatMap { group in
+  group.rows.flatMap { $0 }
+}
+
 public let defaultTheme = "boom"
 
 public let fontIds = ["sm", "md", "lg", "xl"]

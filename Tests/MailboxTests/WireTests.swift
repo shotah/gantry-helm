@@ -132,9 +132,10 @@ final class WireTests: XCTestCase {
   }
 
   func testThemeNoticeCarriesTheIdAndClearsOnNull() {
-    let got = parseFrame(#"{"kind":"theme","theme":"noir"}"#)!
+    let got = parseFrame(#"{"kind":"theme","theme":"siren"}"#)!
     XCTAssertEqual("theme", got.kind)
-    XCTAssertEqual("noir", got.theme)
+    XCTAssertEqual("siren", got.theme)
+    XCTAssertNil(parseFrame(#"{"kind":"theme","theme":"noir"}"#)?.theme)
     XCTAssertNil(got.text)
     let cleared = parseFrame(#"{"kind":"theme","theme":null}"#)!
     XCTAssertEqual("", cleared.theme)

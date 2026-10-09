@@ -17,6 +17,8 @@ and the messaging entitlement are still app + Apple paperwork.
 
 - Host STT → `inbound` text. We never run our own recognizer in
   the dash.
+- A mood paints the phone only. The communication card uses the
+  car's palette.
 - Host TTS of `reply` / `push`. Skip on `replay` and on `inbound`
   (your other mouth).
 - Open Helm and send a line **before** you project, then lock the

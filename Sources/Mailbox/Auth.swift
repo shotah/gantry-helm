@@ -168,7 +168,7 @@ public final class AuthApi {
   }
 }
 
-/// `{ "theme": "noir" | null, "themes": [...] }` — catalog cards are ignored.
+/// `{ "theme": "siren" | null, "themes": [...] }` — catalog cards are ignored.
 public func roomThemeFromState(_ raw: String) -> String {
   guard let o = JSON.object(raw) else {
     return ""

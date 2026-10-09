@@ -29,7 +29,7 @@ public let docShots: [DocShot] = [
   DocShot(file: "phone-draft", sample: "thread", open: "draft"),
   DocShot(file: "phone-react", sample: "thread", open: "react"),
   DocShot(file: "phone-keyboard", sample: "thread", open: "keyboard"),
-  DocShot(file: "phone-thread-lamp", sample: "thread", theme: "lamp"),
+  DocShot(file: "phone-thread-marquee", sample: "thread", theme: "marquee"),
   DocShot(file: "phone-thread-paper", sample: "thread", theme: "paper"),
 ]
 

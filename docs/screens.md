@@ -4,11 +4,11 @@ What the mouth looks like. `make shot` on a Mac with Xcode writes
 `assets/docs/<name>.png` from the Simulator (`-shot <name>`, DEBUG).
 `SHOT=phone-thread` shoots one. `SHOT_DRY=1` prints the list. This
 Deck has no Simulator, so it refuses a real capture. The SwiftUI
-shell is in `app/Helm` — same Ada/Kit copy, same Boom / Lamp /
-Paper as Cab.
+shell is in `app/Helm`.
 
-Boom is the default mood; Lamp and Paper are the other two README
-themes. The rest of the catalog lives in Settings (`Look.themeIds`).
+Boom is the neutral default (shared with gantree). Paper is neutral
+daylight. Marquee is one mood. Settings groups the catalog as Plain
+and Moods (`Look.themeIds`).
 
 Samples are canned Ada/Kit turns — not a live crane. Release builds
 ignore a `sample` launch argument.
@@ -31,7 +31,7 @@ ignore a `sample` launch argument.
 | `phone-draft` | `thread` | Staged photo on compose: thumbnail + Remove; Send carries caption + JPEG. |
 | `phone-react` | `thread` | Long-press on Kit's last line: inline reaction strip, two rows of six. |
 | `phone-keyboard` | `thread` | Compose focused, keyboard up. Header and thread stay put. |
-| `phone-thread-lamp` | `thread` | Same thread, Lamp. |
+| `phone-thread-marquee` | `thread` | Same thread, Marquee. |
 | `phone-thread-paper` | `thread` | Same thread, Paper (daylight). |
 
 ## CarPlay

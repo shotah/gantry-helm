@@ -37,6 +37,7 @@ enum HelmNotify {
     ]) { _, _ in }
   }
 
+  /// The card uses the car's palette. A mood paints the handset only.
   static func postKit(slug: String, body: String, replay: Bool) {
     if replay {
       return

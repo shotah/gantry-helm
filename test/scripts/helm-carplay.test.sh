@@ -60,5 +60,13 @@ grep -q 'surface: carplay' "$root/docs/carplay_setup.md" || {
   echo "FAIL: carplay_setup should say spoken reply is surface: carplay" >&2
   exit 1
 }
+if grep -q 'helmColors' "$notify"; then
+  echo "FAIL: a mood must not paint the CarPlay card" >&2
+  exit 1
+fi
+grep -q "car's palette" "$root/docs/carplay.md" || {
+  echo "FAIL: carplay.md should say the card uses the car's palette" >&2
+  exit 1
+}
 
 echo "ok helm-carplay"

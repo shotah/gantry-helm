@@ -67,7 +67,7 @@ default.
 
 <p align="center">
   <img src="assets/docs/phone-thread.png" alt="Ada and Kit thread, Boom" width="24%">
-  <img src="assets/docs/phone-thread-lamp.png" alt="Same thread, Lamp" width="24%">
+  <img src="assets/docs/phone-thread-marquee.png" alt="Same thread, Marquee" width="24%">
   <img src="assets/docs/phone-thread-paper.png" alt="Same thread, Paper" width="24%">
   <img src="assets/docs/phone-stream.png" alt="Kit drafting, Live · typing" width="24%">
 </p>

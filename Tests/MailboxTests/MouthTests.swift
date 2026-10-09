@@ -24,8 +24,10 @@ final class MouthTests: XCTestCase {
 
   func testThemeNoticeSetsTheRoomIdAndClearsOnEmpty() {
     let mouth = Mouth()
+    mouth.ingest(WireFrame(kind: "theme", theme: "siren"))
+    XCTAssertEqual("siren", mouth.roomTheme)
     mouth.ingest(WireFrame(kind: "theme", theme: "noir"))
-    XCTAssertEqual("noir", mouth.roomTheme)
+    XCTAssertEqual("siren", mouth.roomTheme)
     XCTAssertTrue(mouth.lines.isEmpty)
     mouth.ingest(WireFrame(kind: "theme", theme: ""))
     XCTAssertEqual("", mouth.roomTheme)
@@ -328,13 +330,13 @@ final class MouthTests: XCTestCase {
     let mouth = Mouth()
     mouth.setUp(true)
     mouth.setHint("live")
-    mouth.setRoomTheme("noir")
+    mouth.setRoomTheme("siren")
     mouth.add(ChatLine(id: "k1", fromYou: false, text: "kit", kind: "reply"))
     mouth.clearThread()
     XCTAssertTrue(mouth.lines.isEmpty)
     XCTAssertTrue(mouth.up)
     XCTAssertEqual("live", mouth.hint)
-    XCTAssertEqual("noir", mouth.roomTheme)
+    XCTAssertEqual("siren", mouth.roomTheme)
     mouth.hydrate([ChatLine(id: "c1", fromYou: false, text: "cached", kind: "reply", at: 1)])
     XCTAssertEqual(["c1"], mouth.lines.map(\.id))
   }

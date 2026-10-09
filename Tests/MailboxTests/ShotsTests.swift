@@ -4,10 +4,10 @@ import XCTest
 
 final class ShotsTests: XCTestCase {
   func testLaunchShotReadsDashAndEquals() {
-    let shot = launchDocShot(["Helm", "-shot", "phone-thread-lamp"])
-    XCTAssertEqual("phone-thread-lamp", shot?.file)
+    let shot = launchDocShot(["Helm", "-shot", "phone-thread-marquee"])
+    XCTAssertEqual("phone-thread-marquee", shot?.file)
     XCTAssertEqual("thread", shot?.sample)
-    XCTAssertEqual("lamp", shot?.theme)
+    XCTAssertEqual("marquee", shot?.theme)
     XCTAssertEqual("", shot?.open)
     XCTAssertEqual("settings", launchDocShot(["--shot=phone-settings"])?.open)
     XCTAssertEqual("draft", docShot("phone-draft")?.open)

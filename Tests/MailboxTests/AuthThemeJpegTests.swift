@@ -133,7 +133,8 @@ final class AuthThemeJpegTests: XCTestCase {
   }
 
   func testRoomThemeFromStateReadsTheIdAndTreatsNullAsCleared() {
-    XCTAssertEqual("tide", roomThemeFromState(#"{"theme":"tide","themes":[]}"#))
+    XCTAssertEqual("rain", roomThemeFromState(#"{"theme":"rain","themes":[]}"#))
+    XCTAssertEqual("", roomThemeFromState(#"{"theme":"noir"}"#))
     XCTAssertEqual("", roomThemeFromState(#"{"theme":null}"#))
     XCTAssertEqual("", roomThemeFromState(#"{"theme":"nope"}"#))
     XCTAssertEqual("", roomThemeFromState("nope"))
@@ -141,9 +142,9 @@ final class AuthThemeJpegTests: XCTestCase {
 
   func testFetchReturnsTheRoomIdAndSendsBearer() {
     let http = MockHTTP()
-    http.queue = [HTTPResult(status: 200, body: Data(#"{"theme":"noir","themes":[]}"#.utf8))]
+    http.queue = [HTTPResult(status: 200, body: Data(#"{"theme":"siren","themes":[]}"#.utf8))]
     XCTAssertEqual(
-      "noir",
+      "siren",
       ThemeApi(transport: http).fetch(origin: "http://mailbox.test/", slug: "kit", bearer: "jwe"))
     XCTAssertEqual("/api/theme", http.requests[0].url?.path)
     XCTAssertEqual("slug=kit", http.requests[0].url?.query)

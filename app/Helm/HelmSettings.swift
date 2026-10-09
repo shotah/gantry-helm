@@ -95,11 +95,7 @@ struct HelmSettings: View {
             .font(.caption)
             .foregroundStyle(Color(rgb: colors.dim))
         }
-        dropdown(
-          "Theme", ids: themeIds, label: themeLabel,
-          selection: Binding(get: { model.themeId }, set: { model.pickTheme($0) })
-        )
-        .accessibilityLabel("color theme")
+        themePicker()
         dropdown("Font size", ids: fontIds, label: fontLabel, selection: $model.fontId)
         dropdown(
           "Photo size", ids: photoSizeIds, label: photoSizeChip, selection: $model.photoSizeId)
@@ -203,6 +199,65 @@ struct HelmSettings: View {
         .background(Color(rgb: helmColors(model.paintedTheme).track))
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
+  }
+
+  /// Plain, then mood pairs. A tap is a human pick. Kit tags the room id while following.
+  private func themePicker() -> some View {
+    let colors = helmColors(model.paintedTheme)
+    return VStack(alignment: .leading, spacing: 8) {
+      Text("Theme").font(.caption).foregroundStyle(Color(rgb: colors.muted))
+      ForEach(themeGroups, id: \.title) { group in
+        Text(group.title)
+          .font(.caption)
+          .foregroundStyle(Color(rgb: colors.dim))
+        ForEach(Array(group.rows.enumerated()), id: \.offset) { _, row in
+          HStack(spacing: 8) {
+            ForEach(row, id: \.self) { id in
+              themeChip(id)
+            }
+          }
+        }
+      }
+    }
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("color theme")
+  }
+
+  private func themeChip(_ id: String) -> some View {
+    let colors = helmColors(model.paintedTheme)
+    let swatch = helmColors(id)
+    let on = model.themeId == id
+    let kit = model.followTheme && model.roomTheme == id
+    return Button {
+      model.pickTheme(id)
+    } label: {
+      HStack(spacing: 6) {
+        HStack(spacing: 0) {
+          Color(rgb: swatch.canvas)
+          Color(rgb: swatch.accent)
+        }
+        .frame(width: 14, height: 14)
+        .clipShape(Circle())
+        Text(themeLabel(id)).font(.caption)
+        if kit {
+          Text("Kit")
+            .font(.caption2)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 1)
+            .background(Color(rgb: colors.accentSoft))
+            .clipShape(Capsule())
+        }
+      }
+      .padding(.horizontal, 10)
+      .padding(.vertical, 6)
+      .background(on ? Color(rgb: colors.accentSoft) : Color(rgb: colors.track))
+      .foregroundStyle(Color(rgb: on ? colors.mark : colors.fg))
+      .clipShape(Capsule())
+      .overlay(
+        Capsule().stroke(on ? Color(rgb: colors.accent) : Color(rgb: colors.line), lineWidth: 1)
+      )
+    }
+    .accessibilityLabel(kit ? "\(themeLabel(id)), Kit" : themeLabel(id))
   }
 
   /// One-of-N as a menu. Chips wrapped into a sideways scroll on narrow screens.
